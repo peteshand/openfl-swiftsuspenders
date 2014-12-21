@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) 2012 the original author or authors
+ *
+ * Permission is hereby granted to use, modify, and distribute this file
+ * in accordance with the terms of the license agreement accompanying it.
+ */
+
+package org.swiftsuspenders.reflection;
+
+import org.swiftsuspenders.typedescriptions.TypeDescription;
+
+interface Reflector
+{
+	function getClass(value:Dynamic):Class;
+	function getFQCN(value :Dynamic, replaceColons:Bool = false):String;
+	function typeImplements(type:Class, superType:Class):Bool;
+
+	function describeInjections(type:Class):TypeDescription;
+}

@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2012 the original author or authors
+ *
+ * Permission is hereby granted to use, modify, and distribute this file 
+ * in accordance with the terms of the license agreement accompanying it.
+ */
+
+package org.swiftsuspenders.typedescriptions;
+
+import openfl.utils.Dictionary;
+import flash.utils.getQualifiedClassName;
+
+import org.swiftsuspenders.Injector;
+import org.swiftsuspenders.errors.InjectorMissingMappingError;
+import org.swiftsuspenders.dependencyproviders.DependencyProvider;
+
+class PropertyInjectionPoint extends InjectionPoint
+{
+	//----------------------       Private / Protected Properties       ----------------------//
+	private var _propertyName:String;
+	private var _mappingId:String;
+	private var _optional:Bool;
+
+
+	//----------------------               Public Methods               ----------------------//
+	public function new(mappingId:String, propertyName:String,
+		optional:Bool, injectParameters:Dictionary)
+	{
+		_propertyName = propertyName;
+		_mappingId = mappingId;
+		_optional = optional;
+		this.injectParameters = injectParameters;
+	}
+	
+	override public function applyInjection(
+			target:Dynamic, targetType:Class, injector:Injector):Void
+	{
+		var provider:DependencyProvider = injector.getProvider(_mappingId);
+		if (!provider)
+		{
+			if (_optional)
+			{
+				return;
+			}
+			throw(new InjectorMissingMappingError(
+					'Injector is missing a mapping to handle injection into property "' +
+					_propertyName + '" of object "' + target + '" with type "' +
+					getQualifiedClassName(targetType) +
+					'". Target dependency: "' + _mappingId + '"'));
+		}
+		target[_propertyName] = provider.apply(targetType, injector, injectParameters);
+	}
+}
