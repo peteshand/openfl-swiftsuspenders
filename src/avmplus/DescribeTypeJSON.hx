@@ -19,32 +19,42 @@ package avmplus;
  */
 class DescribeTypeJSON
 {
+	// FIX
 	//----------------------              Public Properties             ----------------------//
-	public static var available:Bool = describeTypeJSON != null;
+	//public static var available:Bool = describeTypeJSON != null;
+	public static var available:Bool = false;
 	
-	public static var INSTANCE_FLAGS:UInt = INCLUDE_BASES | INCLUDE_INTERFACES
+	/*public static var INSTANCE_FLAGS:UInt = INCLUDE_BASES | INCLUDE_INTERFACES
 		| INCLUDE_VARIABLES | INCLUDE_ACCESSORS | INCLUDE_METHODS | INCLUDE_METADATA
 		| INCLUDE_CONSTRUCTOR | INCLUDE_TRAITS | USE_ITRAITS | HIDE_OBJECT;
 	public static var CLASS_FLAGS:UInt = INCLUDE_INTERFACES | INCLUDE_VARIABLES
-		| INCLUDE_ACCESSORS | INCLUDE_METHODS | INCLUDE_METADATA | INCLUDE_TRAITS | HIDE_OBJECT;
+		| INCLUDE_ACCESSORS | INCLUDE_METHODS | INCLUDE_METADATA | INCLUDE_TRAITS | HIDE_OBJECT;*/
 
 
 	//----------------------               Public Methods               ----------------------//
 	public function new()
 	{
+		
 	}
-	public function describeType(target:Dynamic, flags:UInt):Dynamic
+	
+	//public function describeType(target:Dynamic, flags:UInt):Dynamic
+	//{
+		//var describeTypeJSONClass = untyped __global__["avmplus.describeTypeJSON"];
+		//describeTypeJSON
+		//describeType
+		//var describeTypeJSON:Dynamic = Type.createInstance(describeTypeJSONClass, []);
+		//var func:Dynamic->Dynamic->Dynamic = describeTypeJSON.describeType;
+		//return null;//describeTypeJSON(target, flags);
+	//}
+
+	public function getInstanceDescription(type:Class<Dynamic>):Dynamic
 	{
-		return describeTypeJSON(target, flags);
+		// FIX
+		return null;//describeTypeJSON(type, INSTANCE_FLAGS);
 	}
 
-	public function getInstanceDescription(type:Class):Dynamic
-	{
-		return describeTypeJSON(type, INSTANCE_FLAGS);
-	}
-
-	public function getClassDescription(type:Class):Dynamic
-	{
-		return describeTypeJSON(type, CLASS_FLAGS);
-	}
+	//public function getClassDescription(type:Class<Dynamic>):Dynamic
+	//{
+		//return null;//describeTypeJSON(type, CLASS_FLAGS);
+	//}
 }

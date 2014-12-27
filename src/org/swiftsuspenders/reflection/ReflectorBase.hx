@@ -7,9 +7,8 @@
 
 package org.swiftsuspenders.reflection;
 
-import flash.utils.Proxy;
-import flash.utils.getDefinitionByName;
-import flash.utils.getQualifiedClassName;
+//import flash.utils.Proxy;
+//import flash.utils.getDefinitionByName;
 
 class ReflectorBase
 {
@@ -20,27 +19,50 @@ class ReflectorBase
 	{
 	}
 
-	public function getClass(value:Dynamic):Class
+	public function getClass(value:Dynamic):Class<Dynamic>
 	{
 		/*
 		 There are several types for which the 'constructor' property doesn't work:
 		 - instances of Proxy, Xml and XMLList throw exceptions when trying to access 'constructor'
-		 - instances of Vector, always returns Vector.<*> as their constructor except numeric vectors
-		 - for numeric vectors 'value is Vector.<*>' wont work, but 'value.constructor' will return correct result
+		 - instances of Vector, always returns Array<Dynamic> as their constructor except numeric vectors
+		 - for numeric vectors 'value is Array<Dynamic>' wont work, but 'value.constructor' will return correct result
 		 - Int and UInt return Float as their constructor
 		 For these, we have to fall back to more verbose ways of getting the constructor.
 		 */
-		if (value is Proxy || value is Float || value is Xml || value is XMLList || value is Vector.<*>)
+		// FIX (add XMLList, Float)
+		/*if (Std.is(value, Proxy))
 		{
-			return Class(getDefinitionByName(getQualifiedClassName(value)));
+			return Proxy;
+		}*/
+		/*else if (Std.is(value, Float))
+		{
+			return Float;
+		}*/
+		/*else */if (Std.is(value, Xml))
+		{
+			return Xml;
 		}
+		else if (Std.is(value, Array))
+		{
+			return Array;
+		}
+		
+		/*if (Std.is(value, Proxy) || Std.is(value, Float) || Std.is(value, Xml) || Std.is(value, XMLList) || Std.is(value, Array))
+		{
+			var classReference = Type.resolveClass("flash.display.Sprite");
+			var instance = Type.createEmptyInstance(classReference);
+			
+			return cast(getDefinitionByName(Type.getClassName(value)), Class<Dynamic>);
+			
+			//return cast(getDefinitionByName(Type.getClassName(value)), Class<Dynamic>);
+		}*/
 		return value.constructor;
 	}
 
 	public function getFQCN(value :Dynamic, replaceColons:Bool = false):String
 	{
 		var fqcn:String;
-		if (value is String)
+		if (Std.is(value, String))
 		{
 			fqcn = value;
 			// Add colons if missing and desired.
@@ -57,9 +79,13 @@ class ReflectorBase
 		}
 		else
 		{
-			fqcn = getQualifiedClassName(value);
+			fqcn = Type.getClassName(value);
 		}
-		return replaceColons ? fqcn.replace('::', '.'):fqcn;
+		
+		if (replaceColons == true) {
+			return fqcn.split('::').join('.');
+		}
+		return fqcn;
 	}
 
 	//----------------------         Private / Protected Methods        ----------------------//

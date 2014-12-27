@@ -7,38 +7,40 @@
 
 package org.swiftsuspenders.typedescriptions;
 
-import openfl.utils.Dictionary;
+
+import openfl.errors.Error;
 import org.swiftsuspenders.Injector;
 
 class ConstructorInjectionPoint extends MethodInjectionPoint
 {
 	//----------------------               Public Methods               ----------------------//
-	public function new(parameters:Array, requiredParameters:UInt,
-		injectParameters:Dictionary)
+	public function new(parameters:Array<Dynamic>, requiredParameters:UInt, injectParameters:Map<Dynamic,Dynamic>)
 	{
 		super('ctor', parameters, requiredParameters, false, injectParameters);
 	}
 
-	public function createInstance(type:Class, injector:Injector):Dynamic
+	public function createInstance(type:Class<Dynamic>, injector:Injector):Dynamic
 	{
-		var p:Array = gatherParameterValues(type, type, injector);
+		var p:Array<Dynamic> = gatherParameterValues(type, type, injector);
 		var result:Dynamic;
 		//the only way to implement ctor injections, really!
+		
 		switch (p.length)
 		{
-			case 1:result = new type(p[0]); break;
-			case 2:result = new type(p[0], p[1]); break;
-			case 3:result = new type(p[0], p[1], p[2]); break;
-			case 4:result = new type(p[0], p[1], p[2], p[3]); break;
-			case 5:result = new type(p[0], p[1], p[2], p[3], p[4]); break;
-			case 6:result = new type(p[0], p[1], p[2], p[3], p[4], p[5]); break;
-			case 7:result = new type(p[0], p[1], p[2], p[3], p[4], p[5], p[6]); break;
-			case 8:result = new type(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]); break;
-			case 9:result = new type(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]); break;
-			case 10:result = new type(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]); break;
+			case 0:result = Type.createInstance( type, [] );
+			case 1:result = Type.createInstance( type, [p[0]] );
+			case 2:result = Type.createInstance( type, [p[0], p[1]] );
+			case 3:result = Type.createInstance( type, [p[0], p[1], p[2]] );
+			case 4:result = Type.createInstance( type, [p[0], p[1], p[2], p[3]] );
+			case 5:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4]] );
+			case 6:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5]] );
+			case 7:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6]] );
+			case 8:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]] );
+			case 9:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]] );
+			case 10:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]] );
 			default: throw new Error("The constructor for " + type + " has too many arguments, maximum is 10");
 		}
-		p.length = 0;
+		p = [];
 		return result;
 	}
 }

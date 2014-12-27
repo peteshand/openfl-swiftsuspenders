@@ -9,9 +9,6 @@ package org.swiftsuspenders.reflection;
 
 import avmplus.DescribeTypeJSON;
 
-import openfl.utils.Dictionary;
-import flash.utils.getQualifiedClassName;
-
 import org.swiftsuspenders.errors.InjectorError;
 import org.swiftsuspenders.typedescriptions.ConstructorInjectionPoint;
 import org.swiftsuspenders.typedescriptions.MethodInjectionPoint;
@@ -27,20 +24,20 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 	private var _descriptor:DescribeTypeJSON = new DescribeTypeJSON();
 
 	//----------------------               Public Methods               ----------------------//
-	public function typeImplements(type:Class, superType:Class):Bool
+	public function typeImplements(type:Class<Dynamic>, superType:Class<Dynamic>):Bool
 	{
 		if (type == superType)
 		{
 			return true;
 		}
-		var superClassName:String = getQualifiedClassName(superType);
+		var superClassName:String = Type.getClassName(superType);
 
 		var traits:Dynamic = _descriptor.getInstanceDescription(type).traits;
-		return (traits.bases as Array).indexOf(superClassName) > -1
-				|| (traits.interfaces as Array).indexOf(superClassName) > -1;
+		return (cast (traits.bases, Array<Dynamic>)).indexOf(superClassName) > -1
+				|| (cast (traits.interfaces, Array<Dynamic>)).indexOf(superClassName) > -1;
 	}
 
-	public function describeInjections(type:Class):TypeDescription
+	public function describeInjections(type:Class<Dynamic>):TypeDescription
 	{
 		var rawDescription:Dynamic = _descriptor.getInstanceDescription(type);
 		var traits:Dynamic = rawDescription.traits;
@@ -58,115 +55,135 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 	}
 
 	//----------------------         Private / Protected Methods        ----------------------//
-	private function addCtorInjectionPoint(
-		description:TypeDescription, traits:Dynamic, typeName:String):Void
+	private function addCtorInjectionPoint(description:TypeDescription, traits:Dynamic, typeName:String):Void
 	{
-		var parameters:Array = traits.constructor;
-		if (!parameters)
+		var parameters:Array<Dynamic> = traits.constructor;
+		if (parameters == null)
 		{
 			description.ctor =  traits.bases.length > 0
 				? new NoParamsConstructorInjectionPoint()
 				: null;
 			return;
 		}
-		var injectParameters:Dictionary = extractTagParameters('Inject', traits.metadata);
-		var parameterNames:Array =
-			(injectParameters && injectParameters.name || '').split(',');
-		var requiredParameters:Int =
-			gatherMethodParameters(parameters, parameterNames, typeName);
-		description.ctor =
-			new ConstructorInjectionPoint(parameters, requiredParameters, injectParameters);
+		var injectParameters:Map<Dynamic,Dynamic> = extractTagParameters('Inject', traits.metadata);
+		
+		//var parameterNames:Array<Dynamic> = (injectParameters && injectParameters.name || '').split(',');
+		// CHECK
+		var parameterNames:Array<Dynamic> = [""];
+		if (injectParameters != injectParameters && Reflect.hasField(injectParameters, "name")) {
+			parameterNames = Reflect.getProperty(injectParameters, "name").split(',');
+		}
+		
+		var requiredParameters:Int = gatherMethodParameters(parameters, parameterNames, typeName);
+		
+		description.ctor = new ConstructorInjectionPoint(parameters, requiredParameters, injectParameters);
 	}
 
-	private function addMethodInjectionPoints(
-		description:TypeDescription, methods:Array, typeName:String):Void
+	private function addMethodInjectionPoints(description:TypeDescription, methods:Array<Dynamic>, typeName:String):Void
 	{
-		if (!methods)
+		if (methods == null)
 		{
 			return;
 		}
 		var length:UInt = methods.length;
-		for (var i:Int = 0; i < length; i++)
+		for (i in 0...length)
 		{
 			var method:Dynamic = methods[i];
-			var injectParameters:Dictionary = extractTagParameters('Inject', method.metadata);
-			if (!injectParameters)
+			var injectParameters:Map<Dynamic,Dynamic> = extractTagParameters('Inject', method.metadata);
+			if (injectParameters == null)
 			{
 				continue;
 			}
-			var optional:Bool = injectParameters.optional == 'true';
-			var parameterNames:Array = (injectParameters.name || '').split(',');
-			var parameters:Array = method.parameters;
-			var requiredParameters:UInt =
-					gatherMethodParameters(parameters, parameterNames, typeName);
-			var injectionPoint:MethodInjectionPoint = new MethodInjectionPoint(method.name,
-				parameters, requiredParameters, optional, injectParameters);
+			
+			var optional:Bool = false;
+			if (Reflect.hasField(injectParameters, "optional")) {
+				if (Reflect.getProperty(injectParameters, "optional") == 'true') optional = true;
+			}
+			
+			var mappingName = '';
+			if (Reflect.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
+			
+			var parameterNames:Array<Dynamic> = mappingName.split(',');
+			var parameters:Array<Dynamic> = method.parameters;
+			var requiredParameters:UInt = gatherMethodParameters(parameters, parameterNames, typeName);
+			var injectionPoint:MethodInjectionPoint = new MethodInjectionPoint(method.name, parameters, requiredParameters, optional, injectParameters);
 			description.addInjectionPoint(injectionPoint);
 		}
 	}
 
-	private function addPostConstructMethodPoints(
-		description:TypeDescription, methods:Array, typeName:String):Void
+	private function addPostConstructMethodPoints(description:TypeDescription, methods:Array<Dynamic>, typeName:String):Void
 	{
-		var injectionPoints:Array = gatherOrderedInjectionPointsForTag(
-			PostConstructInjectionPoint, 'PostConstruct', methods, typeName);
-		for (var i:Int = 0, length:Int = injectionPoints.length; i < length; i++)
+		var injectionPoints:Array<Dynamic> = gatherOrderedInjectionPointsForTag(PostConstructInjectionPoint, 'PostConstruct', methods, typeName);
+		
+		var length = injectionPoints.length;
+		//for (var i : int = 0, length : int = injectionPoints.length; i < length; i++)
+		
+		for (i in 0...length)
 		{
+			length = injectionPoints.length;
 			description.addInjectionPoint(injectionPoints[i]);
 		}
 	}
 
-	private function addPreDestroyMethodPoints(
-		description:TypeDescription, methods:Array, typeName:String):Void
+	private function addPreDestroyMethodPoints(description:TypeDescription, methods:Array<Dynamic>, typeName:String):Void
 	{
-		var injectionPoints:Array = gatherOrderedInjectionPointsForTag(
-			PreDestroyInjectionPoint, 'PreDestroy', methods, typeName);
-		if (!injectionPoints.length)
+		var injectionPoints:Array<Dynamic> = gatherOrderedInjectionPointsForTag(PreDestroyInjectionPoint, 'PreDestroy', methods, typeName);
+		if (injectionPoints.length == 0)
 		{
 			return;
 		}
 		description.preDestroyMethods = injectionPoints[0];
 		description.preDestroyMethods.last = injectionPoints[0];
-		for (var i:Int = 1, length:Int = injectionPoints.length; i < length; i++)
+		var length = injectionPoints.length;
+		for (i in 1...length)
 		{
 			description.preDestroyMethods.last.next = injectionPoints[i];
 			description.preDestroyMethods.last = injectionPoints[i];
 		}
 	}
 
-	private function addFieldInjectionPoints(
-		description:TypeDescription, fields:Array):Void
+	private function addFieldInjectionPoints(description:TypeDescription, fields:Array<Dynamic>):Void
 	{
-		if (!fields)
+		if (fields == null)
 		{
 			return;
 		}
 		var length:UInt = fields.length;
-		for (var i:Int = 0; i < length; i++)
+		for (i in 0...length)
 		{
 			var field:Dynamic = fields[i];
-			var injectParameters:Dictionary = extractTagParameters('Inject', field.metadata);
-			if (!injectParameters)
+			var injectParameters:Map<Dynamic,Dynamic> = extractTagParameters('Inject', field.metadata);
+			if (injectParameters == null)
 			{
 				continue;
 			}
-			var mappingName:String = injectParameters.name || '';
-			var optional:Bool = injectParameters.optional == 'true';
+			var mappingName = '';
+			
+			if (Reflect.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
+			//var mappingName:String = injectParameters.name || '';
+			
+			var optional:Bool = false;
+			if (Reflect.hasField(injectParameters, "optional")) {
+				if (Reflect.getProperty(injectParameters, "optional") == 'true') optional = true;
+			}
+			
 			var injectionPoint:PropertyInjectionPoint = new PropertyInjectionPoint(
 					field.type + '|' + mappingName, field.name, optional, injectParameters);
 			description.addInjectionPoint(injectionPoint);
 		}
 	}
 
-	private function gatherMethodParameters(
-		parameters:Array, parameterNames:Array, typeName:String):UInt
+	private function gatherMethodParameters(parameters:Array<Dynamic>, parameterNames:Array<Dynamic>, typeName:String):UInt
 	{
 		var requiredLength:UInt = 0;
 		var length:UInt = parameters.length;
-		for (var i:Int = 0; i < length; i++)
+		for (i in 0...length)
 		{
 			var parameter:Dynamic = parameters[i];
-			var injectionName:String = parameterNames[i] || '';
+			var injectionName:String = '';
+			if (parameterNames[i] != null) injectionName = parameterNames[i];
+			//var injectionName:String = parameterNames[i] || '';
+			
 			var parameterTypeName:String = parameter.type;
 			if (parameterTypeName == '*')
 			{
@@ -189,16 +206,15 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 		return requiredLength;
 	}
 
-	private function gatherOrderedInjectionPointsForTag(
-		injectionPointClass:Class, tag:String, methods:Array, typeName:String):Array
+	private function gatherOrderedInjectionPointsForTag(injectionPointClass:Class<Dynamic>, tag:String, methods:Array<Dynamic>, typeName:String):Array<Dynamic>
 	{
-		var injectionPoints:Array = [];
-		if (!methods)
+		var injectionPoints:Array<Dynamic> = [];
+		if (methods == null)
 		{
 			return injectionPoints;
 		}
 		var length:UInt = methods.length;
-		for (var i:Int = 0; i < length; i++)
+		for (i in 0...length)
 		{
 			var method:Dynamic = methods[i];
 			var injectParameters:Dynamic = extractTagParameters(tag, method.metadata);
@@ -206,46 +222,56 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 			{
 				continue;
 			}
-			var parameterNames:Array = (injectParameters.name || '').split(',');
-			var parameters:Array = method.parameters;
+			
+			var mappingName = '';
+			if (Reflect.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
+			
+			var parameterNames:Array<Dynamic> = mappingName.split(',');
+			var parameters:Array<Dynamic> = method.parameters;
 			var requiredParameters:UInt;
-			if (parameters)
+			if (parameters != null)
 			{
-				requiredParameters =
-					gatherMethodParameters(parameters, parameterNames, typeName);
+				requiredParameters = gatherMethodParameters(parameters, parameterNames, typeName);
 			}
 			else
 			{
 				parameters = [];
 				requiredParameters = 0;
 			}
-			var order:Int = parseInt(injectParameters.order, 10);
+			var order:Int = Std.parseInt(injectParameters.order);
+			
 			//Int can't be NaN, so we have to verify that parsing succeeded by comparison
-			if (order.toString(10) != injectParameters.order)
+			// CHECK
+			//if (order.toString(10) != injectParameters.order)
+			if (Std.string(order) != injectParameters.order)
 			{
-				order = Int.MAX_VALUE;
+				order = Limits.IntMax;
 			}
-			injectionPoints.push(new injectionPointClass(
-				method.name, parameters, requiredParameters, order));
+			var injectionPoint = Type.createInstance( injectionPointClass, [method.name, parameters, requiredParameters, order] );
+			injectionPoints.push(injectionPoint);
 		}
-		if (injectionPoints.length > 0)
+		//FIX
+		/*if (injectionPoints.length > 0)
 		{
 			injectionPoints.sortOn('order', Array.NUMERIC);
-		}
+		}*/
 		return injectionPoints;
 	}
-	private function extractTagParameters(tag:String, metadata:Array):Dictionary
+	private function extractTagParameters(tag:String, metadata:Array<Dynamic>):Map<Dynamic,Dynamic>
 	{
-		var length:UInt = metadata ? metadata.length:0;
-		for (var i:Int = 0; i < length; i++)
+		var length:UInt = 0;
+		if (metadata != null) length = metadata.length;
+		//var length:UInt = metadata ? metadata.length:0;
+		
+		for (i in 0...length)
 		{
 			var entry:Dynamic = metadata[i];
 			if (entry.name == tag)
 			{
-				var parametersList:Array = entry.value;
-				var parametersMap:Dictionary = new Dictionary();
+				var parametersList:Array<Dynamic> = entry.value;
+				var parametersMap = new Map<String,Dynamic>();
 				var parametersCount:Int = parametersList.length;
-				for (var j:Int = 0; j < parametersCount; j++)
+				for (j in 0...parametersCount)
 				{
 					var parameter:Dynamic = parametersList[j];
 					parametersMap[parameter.key] = parametersMap[parameter.key]

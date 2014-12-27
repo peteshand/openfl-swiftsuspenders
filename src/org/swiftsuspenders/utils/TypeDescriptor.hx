@@ -7,33 +7,35 @@
 
 package org.swiftsuspenders.utils;
 
-import openfl.utils.Dictionary;
-
 import org.swiftsuspenders.reflection.Reflector;
 import org.swiftsuspenders.typedescriptions.TypeDescription;
 
 class TypeDescriptor
 {
 	//----------------------       Private / Protected Properties       ----------------------//
-	public var _descriptionsCache:Dictionary;
+	public var _descriptionsCache:Map<String,TypeDescription>;
 	private var _reflector:Reflector;
 
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(reflector:Reflector, descriptionsCache:Dictionary)
+	public function new(reflector:Reflector, descriptionsCache:Map<String,TypeDescription>)
 	{
 		_descriptionsCache = descriptionsCache;
 		_reflector = reflector;
 	}
 
-	public function getDescription(type:Class):TypeDescription
+	public function getDescription(type:Class<Dynamic>):TypeDescription
 	{
+		var id = UID.create(type);
 		//get type description or cache it if the given type wasn't encountered before
-		return _descriptionsCache[type] ||= _reflector.describeInjections(type);
+		if (_descriptionsCache[id] == null) _descriptionsCache[id] = _reflector.describeInjections(type);
+		
+		//_descriptionsCache[type] = _descriptionsCache[type] || _reflector.describeInjections(type);
+		return _descriptionsCache[id];
 	}
 
-	public function addDescription(type:Class, description:TypeDescription):Void
+	public function addDescription(type:Class<Dynamic>, description:TypeDescription):Void
 	{
-		_descriptionsCache[type] = description;
+		_descriptionsCache[UID.create(type)] = description;
 	}
 }

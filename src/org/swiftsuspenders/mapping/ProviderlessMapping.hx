@@ -14,7 +14,7 @@ interface ProviderlessMapping
 	/**
 	 * @copy InjectionMapping#toType()
 	 */
-	function toType(type:Class):UnsealedMapping;
+	function toType(type:Class<Dynamic>):UnsealedMapping;
 
 	/**
 	 * @copy InjectionMapping#toValue()
@@ -24,7 +24,7 @@ interface ProviderlessMapping
 	/**
 	 * @copy InjectionMapping#toSingleton()
 	 */
-	function toSingleton(type:Class, initializeImmediately:Bool = false):UnsealedMapping;
+	function toSingleton(type:Class<Dynamic>, initializeImmediately:Bool = false):UnsealedMapping;
 
 	/**
 	 * @copy InjectionMapping#asSingleton()

@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders.typedescriptions;
 
-import openfl.utils.Dictionary;
+
 
 import org.swiftsuspenders.Injector;
 
@@ -16,15 +16,15 @@ class InjectionPoint
 	//----------------------              Public Properties             ----------------------//
 	public var next:InjectionPoint;
 	public var last:InjectionPoint;
-	public var injectParameters:Dictionary;
+	public var injectParameters:Map<Dynamic,Dynamic>;
 	
 	//----------------------               Public Methods               ----------------------//
 	public function new()
 	{
 	}
 	
-	public function applyInjection(
-			target:Dynamic, targetType:Class, injector:Injector):Void
+	public function applyInjection(target:Dynamic, targetType:Class<Dynamic>, injector:Injector):Void
 	{
+		
 	}
 }

@@ -7,7 +7,6 @@
 
 package org.swiftsuspenders.dependencyproviders;
 
-import openfl.utils.Dictionary;
 import org.swiftsuspenders.Injector;
 
 interface DependencyProvider
@@ -18,10 +17,10 @@ interface DependencyProvider
 	 * @param targetType The type of the object the dependency is to be injected into
 	 * @param activeInjector The injector through which this DependencyProvider is currently
 	 * invoked
-	 * @param injectParameters Dictionary containing all parameters for the current injection point
+	 * @param injectParameters Map<Dynamic,Dynamic> containing all parameters for the current injection point
 	 * @return The result of the specific DependencyProvider's mechanism
 	 */
-	function apply(targetType:Class, activeInjector:Injector, injectParameters:Dictionary):Dynamic;
+	function apply(targetType:Class<Dynamic>, activeInjector:Injector, injectParameters:Map<Dynamic,Dynamic>):Dynamic;
 
 	/**
 	 * Cleans up any internal state the provider might keep as preparation for the Injector

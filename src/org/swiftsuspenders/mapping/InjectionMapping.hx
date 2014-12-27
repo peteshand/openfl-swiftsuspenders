@@ -18,10 +18,10 @@ import org.swiftsuspenders.dependencyproviders.SoftDependencyProvider;
 import org.swiftsuspenders.dependencyproviders.ValueProvider;
 import org.swiftsuspenders.errors.InjectorError;
 
-class InjectionMapping implements ProviderlessMapping, UnsealedMapping
+class InjectionMapping implements ProviderlessMapping implements UnsealedMapping
 {
 	//----------------------       Private / Protected Properties       ----------------------//
-	private var _type:Class;
+	private var _type:Class<Dynamic>;
 	private var _name:String;
 	private var _mappingId:String;
 	private var _creatingInjector:Injector;
@@ -34,7 +34,7 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	private var _sealKey:Dynamic;
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(creatingInjector:Injector, type:Class, name:String, mappingId:String)
+	public function new(creatingInjector:Injector, type:Class<Dynamic>, name:String, mappingId:String)
 	{
 		_creatingInjector = creatingInjector;
 		_type = type;
@@ -79,7 +79,7 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 *
 	 * @see #toProvider()
 	 */
-	public function toType(type:Class):UnsealedMapping
+	public function toType(type:Class<Dynamic>):UnsealedMapping
 	{
 		toProvider(new ClassProvider(type));
 		return this;
@@ -102,7 +102,7 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 *
 	 * @see #toProvider()
 	 */
-	public function toSingleton(type:Class, initializeImmediately:Bool = false):UnsealedMapping
+	public function toSingleton(type:Class<Dynamic>, initializeImmediately:Bool = false):UnsealedMapping
 	{
 		toProvider(new SingletonProvider(type, _creatingInjector));
 		if (initializeImmediately) {
@@ -151,7 +151,9 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 */
 	public function toProvider(provider:DependencyProvider):UnsealedMapping
 	{
-		_sealed && throwSealedError();
+		// CHECK
+		//_sealed && throwSealedError();
+		if (_sealed) throwSealedError();
 		if (hasProvider() && provider != null && !_defaultProviderSet)
 		{
 			trace('Warning: Injector already has a mapping for ' + _mappingId + '.\n ' +
@@ -182,7 +184,7 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 * @throws org.swiftsuspenders.errors.InjectorMissingMappingError when no mapping was found
 	 * for the specified dependency
 	 */
-	public function toProviderOf(type:Class, name:String = ''):UnsealedMapping{
+	public function toProviderOf(type:Class<Dynamic>, name:String = ''):UnsealedMapping{
 		var provider:DependencyProvider = _creatingInjector.getMapping(type, name).getProvider();
 		toProvider(provider);
 		return this;
@@ -203,7 +205,9 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 */
 	public function softly():ProviderlessMapping
 	{
-		_sealed && throwSealedError();
+		// CHECK
+		//_sealed && throwSealedError();
+		if (_sealed) throwSealedError();
 		if (!_soft)
 		{
 			var provider:DependencyProvider = getProvider();
@@ -224,7 +228,9 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 */
 	public function locally():ProviderlessMapping
 	{
-		_sealed && throwSealedError();
+		// CHECK
+		//_sealed && throwSealedError();
+		if (_sealed) throwSealedError();
 		if (_local)
 		{
 			return this;
@@ -281,7 +287,7 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 		{
 			throw new InjectorError('Can\'t unseal a non-sealed mapping.');
 		}
-		if (key !== _sealKey)
+		if (key != _sealKey)
 		{
 			throw new InjectorError('Can\'t unseal mapping without the correct key.');
 		}
@@ -293,7 +299,10 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	/**
 	 * @return <code>true</code> if the mapping is sealed, <code>false</code> if not
 	 */
-	public function get isSealed():Bool
+	
+	public var isSealed(get_isSealed, null):Bool;
+	
+	public function get_isSealed():Bool
 	{
 		return _sealed;
 	}
@@ -303,7 +312,8 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 */
 	public function hasProvider():Bool
 	{
-		return Bool(_creatingInjector.providerMappings[_mappingId]);
+		if (_creatingInjector.providerMappings[_mappingId] == null) return false;
+		return true;
 	}
 
 	/**
@@ -311,11 +321,10 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 */
 	public function getProvider():DependencyProvider
 	{
-		var provider:DependencyProvider =
-			_creatingInjector.providerMappings[_mappingId];
-		while (provider is ForwardingProvider)
+		var provider:DependencyProvider = _creatingInjector.providerMappings[_mappingId];
+		while (Std.is(provider, ForwardingProvider))
 		{
-			provider = ForwardingProvider(provider).provider;
+			provider = cast(provider, ForwardingProvider).provider;
 		}
 		return provider;
 	}
@@ -335,7 +344,10 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 	 */
 	public function setInjector(injector:Injector):InjectionMapping
 	{
-		_sealed && throwSealedError();
+		// CHECK
+		//_sealed && throwSealedError();
+		if (_sealed) throwSealedError();
+		
 		if (injector == _overridingInjector)
 		{
 			return this;
@@ -358,7 +370,7 @@ class InjectionMapping implements ProviderlessMapping, UnsealedMapping
 		{
 			provider = new LocalOnlyProvider(provider);
 		}
-		if (_overridingInjector)
+		if (_overridingInjector != null)
 		{
 			provider = new InjectorUsingProvider(_overridingInjector, provider);
 		}

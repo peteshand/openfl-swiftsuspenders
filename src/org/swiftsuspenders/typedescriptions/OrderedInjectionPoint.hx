@@ -14,8 +14,7 @@ class OrderedInjectionPoint extends MethodInjectionPoint
 
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(methodName:String, parameters:Array,
-		requiredParameters:UInt, order:Int)
+	public function new(methodName:String, parameters:Array<Dynamic>, requiredParameters:UInt, order:Int)
 	{
 		super(methodName, parameters, requiredParameters, false, null);
 		this.order = order;

@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders.dependencyproviders;
 
-import openfl.utils.Dictionary;
+
 
 import org.swiftsuspenders.mapping.InjectionMapping;
 import org.swiftsuspenders.Injector;
@@ -30,7 +30,7 @@ class OtherMappingProvider implements DependencyProvider
 	 * provided to this provider's constructor
 	 */
 	public function apply(
-		targetType:Class, activeInjector:Injector, injectParameters:Dictionary):Dynamic
+		targetType:Class<Dynamic>, activeInjector:Injector, injectParameters:Map<Dynamic,Dynamic>):Dynamic
 	{
 		return _mapping.getProvider().apply(targetType, activeInjector, injectParameters);
 	}

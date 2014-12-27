@@ -26,11 +26,11 @@ class InjectionEvent extends Event
 	public static var POST_CONSTRUCT:String = 'postConstruct';
 
 	public var instance :Dynamic;
-	public var instanceType:Class;
+	public var instanceType:Class<Dynamic>;
 
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(type:String, instance:Dynamic, instanceType:Class)
+	public function new(type:String, instance:Dynamic, instanceType:Class<Dynamic>)
 	{
 		super(type);
 		this.instance = instance;

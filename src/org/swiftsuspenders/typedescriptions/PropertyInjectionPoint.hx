@@ -7,8 +7,7 @@
 
 package org.swiftsuspenders.typedescriptions;
 
-import openfl.utils.Dictionary;
-import flash.utils.getQualifiedClassName;
+
 
 import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorMissingMappingError;
@@ -20,34 +19,29 @@ class PropertyInjectionPoint extends InjectionPoint
 	private var _propertyName:String;
 	private var _mappingId:String;
 	private var _optional:Bool;
-
-
+	
 	//----------------------               Public Methods               ----------------------//
-	public function new(mappingId:String, propertyName:String,
-		optional:Bool, injectParameters:Dictionary)
+	public function new(mappingId:String, propertyName:String, optional:Bool, injectParameters:Map<Dynamic,Dynamic>)
 	{
 		_propertyName = propertyName;
 		_mappingId = mappingId;
 		_optional = optional;
 		this.injectParameters = injectParameters;
+		super();
 	}
 	
-	override public function applyInjection(
-			target:Dynamic, targetType:Class, injector:Injector):Void
+	override public function applyInjection(target:Dynamic, targetType:Class<Dynamic>, injector:Injector):Void
 	{
 		var provider:DependencyProvider = injector.getProvider(_mappingId);
-		if (!provider)
+		if (provider == null)
 		{
 			if (_optional)
 			{
 				return;
 			}
-			throw(new InjectorMissingMappingError(
-					'Injector is missing a mapping to handle injection into property "' +
-					_propertyName + '" of object "' + target + '" with type "' +
-					getQualifiedClassName(targetType) +
-					'". Target dependency: "' + _mappingId + '"'));
+			throw(new InjectorMissingMappingError('Injector is missing a mapping to handle injection into property "' + _propertyName + '" of object "' + target + '" with type "' +Type.getClassName(targetType) +'". Target dependency: "' + _mappingId + '"'));
 		}
-		target[_propertyName] = provider.apply(targetType, injector, injectParameters);
+		Reflect.setProperty(target, _propertyName, provider.apply(targetType, injector, injectParameters));
+		//target[_propertyName] = provider.apply(targetType, injector, injectParameters);
 	}
 }

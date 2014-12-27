@@ -7,9 +7,9 @@
 
 package org.swiftsuspenders.typedescriptions;
 
-import avmplus.getQualifiedClassName;
+//import avmplus.getQualifiedClassName;
 
-import openfl.utils.Dictionary;
+
 
 import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorMissingMappingError;
@@ -18,59 +18,68 @@ import org.swiftsuspenders.dependencyproviders.DependencyProvider;
 class MethodInjectionPoint extends InjectionPoint
 {
 	//----------------------       Private / Protected Properties       ----------------------//
-	protected var _parameterMappingIDs:Array;
-	protected var _requiredParameters:Int;
+	private var _parameterMappingIDs:Array<Dynamic>;
+	private var _requiredParameters:Int;
 
 	private var _isOptional:Bool;
 	private var _methodName:String;
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(methodName:String, parameters:Array,
-		requiredParameters:UInt, isOptional:Bool, injectParameters:Dictionary)
+	public function new(methodName:String, parameters:Array<Dynamic>, requiredParameters:UInt, isOptional:Bool, injectParameters:Map<Dynamic,Dynamic>)
 	{
 		_methodName = methodName;
 		_parameterMappingIDs = parameters;
 		_requiredParameters = requiredParameters;
 		_isOptional = isOptional;
 		this.injectParameters = injectParameters;
+		super();
 	}
 	
-	override public function applyInjection(
-			target:Dynamic, targetType:Class, injector:Injector):Void
+	override public function applyInjection(target:Dynamic, targetType:Class<Dynamic>, injector:Injector):Void
 	{
-		var p:Array = gatherParameterValues(target, targetType, injector);
+		var p:Array<Dynamic> = gatherParameterValues(target, targetType, injector);
 		if (p.length >= _requiredParameters)
 		{
-			(target[_methodName] as Function).apply(target, p);
+			
+			var func = Reflect.getProperty(target, _methodName);
+			if (Reflect.isFunction(func)) {
+				Reflect.callMethod(target, func, p);
+			}
 		}
-
-		p.length = 0;
+		p = [];
 	}
 
 	//----------------------         Private / Protected Methods        ----------------------//
-	protected function gatherParameterValues(
-			target:Dynamic, targetType:Class, injector:Injector):Array
+	private function gatherParameterValues(target:Dynamic, targetType:Class<Dynamic>, injector:Injector):Array<Dynamic>
 	{
 		var length:Int = _parameterMappingIDs.length;
-		var parameters:Array = [];
-		parameters.length = length;
-		for (var i:Int = 0; i < length; i++)
+		var parameters:Array<Dynamic> = [];
+		// CHECK
+		//parameters.length = length;
+		
+		for (i in 0...length)
 		{
 			var parameterMappingId:String = _parameterMappingIDs[i];
-			var provider:DependencyProvider =
-				injector.getProvider(parameterMappingId);
-			if (!provider)
+			var provider:DependencyProvider = injector.getProvider(parameterMappingId);
+			if (provider == null)
 			{
 				if (i >= _requiredParameters || _isOptional)
 				{
 					break;
 				}
-				throw(new InjectorMissingMappingError(
-					'Injector is missing a mapping to handle injection into target "' +
-					target + '" of type "' + getQualifiedClassName(targetType) + '". \
-					Target dependency: ' + parameterMappingId +
-					', method: ' + _methodName + ', parameter: ' + (i + 1)
-				));
+				
+				var errorMsg:String = 'Injector is missing a mapping to handle injection into target "';
+				errorMsg += target;
+				errorMsg += '" of type "';
+				errorMsg += Type.getClassName(targetType);
+				errorMsg += '". Target dependency: ';
+				errorMsg += parameterMappingId;
+				errorMsg += ', method: ';
+				errorMsg += _methodName;
+				errorMsg += ', parameter: ';
+				errorMsg += (i + 1);
+				
+				throw(new InjectorMissingMappingError(errorMsg));
 			}
 			
 			parameters[i] = provider.apply(targetType, injector, injectParameters);

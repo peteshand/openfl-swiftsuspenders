@@ -7,22 +7,22 @@
 
 package org.swiftsuspenders.dependencyproviders;
 
-import openfl.utils.Dictionary;
+
 import org.swiftsuspenders.Injector;
 
 class FactoryProvider implements DependencyProvider
 {
 	//----------------------       Private / Protected Properties       ----------------------//
-	private var _factoryClass:Class;
+	private var _factoryClass:Class<Dynamic>;
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(factoryClass:Class)
+	public function new(factoryClass:Class<Dynamic>)
 	{
 		_factoryClass = factoryClass;
 	}
 
 	public function apply(
-		targetType:Class, activeInjector:Injector, injectParameters:Dictionary):Dynamic
+		targetType:Class<Dynamic>, activeInjector:Injector, injectParameters:Map<Dynamic,Dynamic>):Dynamic
 	{
 		return DependencyProvider(activeInjector.getInstance(_factoryClass))
 				.apply(targetType, activeInjector, injectParameters);

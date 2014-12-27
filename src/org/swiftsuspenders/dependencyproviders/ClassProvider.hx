@@ -7,18 +7,18 @@
 
 package org.swiftsuspenders.dependencyproviders;
 
-import openfl.utils.Dictionary;
+
 
 import org.swiftsuspenders.Injector;
 
 class ClassProvider implements DependencyProvider
 {
 	//----------------------       Private / Protected Properties       ----------------------//
-	private var _responseType:Class;
+	private var _responseType:Class<Dynamic>;
 
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(responseType:Class)
+	public function new(responseType:Class<Dynamic>)
 	{
 		_responseType = responseType;
 	}
@@ -29,8 +29,7 @@ class ClassProvider implements DependencyProvider
 	 * @return A new instance of the class given to the ClassProvider's constructor,
 	 * constructed using the <code>usingInjector</code>
 	 */
-	public function apply(
-		targetType:Class, activeInjector:Injector, injectParameters:Dictionary):Dynamic
+	public function apply(targetType:Class<Dynamic>, activeInjector:Injector, injectParameters:Map<Dynamic,Dynamic>):Dynamic
 	{
 		return activeInjector.instantiateUnmapped(_responseType);
 	}

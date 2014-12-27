@@ -38,14 +38,14 @@ class MappingEvent extends Event
 	public static var MAPPING_OVERRIDE:String = 'mappingOverride';
 
 
-	public var mappedType:Class;
+	public var mappedType:Class<Dynamic>;
 	public var mappedName:String;
 	public var mapping:InjectionMapping;
 
 
 
 	//----------------------               Public Methods               ----------------------//
-	public function new(type:String, mappedType:Class, mappedName:String, mapping:InjectionMapping)
+	public function new(type:String, mappedType:Class<Dynamic>, mappedName:String, mapping:InjectionMapping)
 	{
 		super(type);
 		this.mappedType = mappedType;

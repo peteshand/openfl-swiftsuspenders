@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders.dependencyproviders;
 
-import openfl.utils.Dictionary;
+
 import org.swiftsuspenders.Injector;
 
 class ValueProvider implements DependencyProvider
@@ -28,14 +28,14 @@ class ValueProvider implements DependencyProvider
 	 *
 	 * @return The value provided to this provider's constructor
 	 */
-	public function apply(targetType:Class, activeInjector:Injector, injectParameters:Dictionary):Dynamic
+	public function apply(targetType:Class<Dynamic>, activeInjector:Injector, injectParameters:Map<Dynamic,Dynamic>):Dynamic
 	{
 		return _value;
 	}
 
 	public function destroy():Void
 	{
-		if (_value && _creatingInjector && _creatingInjector.hasManagedInstance(_value))
+		if (_value != null && _creatingInjector != null && _creatingInjector.hasManagedInstance(_value))
 		{
 			_creatingInjector.destroyInstance(_value);
 		}

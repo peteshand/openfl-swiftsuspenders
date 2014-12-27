@@ -7,8 +7,7 @@
 
 package org.swiftsuspenders.dependencyproviders;
 
-import openfl.utils.Dictionary;
-import flash.utils.getQualifiedClassName;
+
 
 import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorError;
@@ -16,7 +15,7 @@ import org.swiftsuspenders.errors.InjectorError;
 class SingletonProvider implements DependencyProvider
 {
 	//----------------------       Private / Protected Properties       ----------------------//
-	private var _responseType:Class;
+	private var _responseType:Class<Dynamic>;
 	private var _creatingInjector:Injector;
 	private var _response:Dynamic;
 	private var _destroyed:Bool;
@@ -29,7 +28,7 @@ class SingletonProvider implements DependencyProvider
 	 * @param creatingInjector The injector that was used to create the
 	 * <code>InjectionMapping</code> this DependencyProvider is associated with
 	 */
-	public function new(responseType:Class, creatingInjector:Injector)
+	public function new(responseType:Class<Dynamic>, creatingInjector:Injector)
 	{
 		_responseType = responseType;
 		_creatingInjector = creatingInjector;
@@ -41,10 +40,13 @@ class SingletonProvider implements DependencyProvider
 	 * @return The same, lazily created, instance of the class given to the SingletonProvider's
 	 * constructor on each invocation
 	 */
-	public function apply(
-		targetType:Class, activeInjector:Injector, injectParameters:Dictionary):Dynamic
+	public function apply(targetType:Class<Dynamic>, activeInjector:Injector, injectParameters:Map<Dynamic,Dynamic>):Dynamic
 	{
-		return _response ||= createResponse(_creatingInjector);
+		if (_response == null) {
+			_response = createResponse(_creatingInjector);
+		}
+		//_response = _response || createResponse(_creatingInjector);
+		return _response;
 	}
 
 
@@ -54,7 +56,7 @@ class SingletonProvider implements DependencyProvider
 		if (_destroyed)
 		{
 			throw new InjectorError("Forbidden usage of unmapped singleton provider for type "
-				+ getQualifiedClassName(_responseType));
+				+ Type.getClassName(_responseType));
 		}
 		return injector.instantiateUnmapped(_responseType);
 	}
@@ -62,7 +64,7 @@ class SingletonProvider implements DependencyProvider
 	public function destroy():Void
 	{
 		_destroyed = true;
-		if (_response && _creatingInjector && _creatingInjector.hasManagedInstance(_response))
+		if (_response != null && _creatingInjector != null && _creatingInjector.hasManagedInstance(_response))
 		{
 			_creatingInjector.destroyInstance(_response);
 		}

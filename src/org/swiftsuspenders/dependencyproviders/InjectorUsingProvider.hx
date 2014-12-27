@@ -7,7 +7,7 @@
 
 package org.swiftsuspenders.dependencyproviders;
 
-import openfl.utils.Dictionary;
+
 
 import org.swiftsuspenders.Injector;
 
@@ -24,7 +24,7 @@ class InjectorUsingProvider extends ForwardingProvider
 	}
 
 	override public function apply(
-		targetType:Class, activeInjector:Injector, injectParameters:Dictionary):Dynamic
+		targetType:Class<Dynamic>, activeInjector:Injector, injectParameters:Map<Dynamic,Dynamic>):Dynamic
 	{
 		return provider.apply(targetType, injector, injectParameters);
 	}

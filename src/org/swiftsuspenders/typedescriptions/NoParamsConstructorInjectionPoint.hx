@@ -16,8 +16,8 @@ class NoParamsConstructorInjectionPoint extends ConstructorInjectionPoint
 		super([], 0, injectParameters);
 	}
 
-	override public function createInstance(type:Class, injector:Injector):Dynamic
+	override public function createInstance(type:Class<Dynamic>, injector:Injector):Dynamic
 	{
-		return new type();
+		return Type.createInstance(type, []);
 	}
 }
