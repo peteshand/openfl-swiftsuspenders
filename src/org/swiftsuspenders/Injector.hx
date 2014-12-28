@@ -9,6 +9,7 @@ package org.swiftsuspenders;
 
 import avmplus.DescribeTypeJSON;
 import openfl.errors.Error;
+import org.swiftsuspenders.utils.UID;
 
 import openfl.events.EventDispatcher;
 import openfl.system.ApplicationDomain;
@@ -169,17 +170,92 @@ class Injector extends EventDispatcher
 	//----------------------       Private / Protected Properties       ----------------------//
 	private static var INJECTION_POINTS_CACHE = new Map<String,TypeDescription>();
 
-	private var _parentInjector:Injector;
-	private var _applicationDomain:ApplicationDomain;
+	
+	/**
+	 * Sets the <code>Injector</code> to ask in case the current <code>Injector</code> doesn't
+	 * have a mapping for a dependency.
+	 *
+	 * <p>Parent Injectors can be nested in arbitrary depths with very little overhead,
+	 * enabling very modular setups for the managed object graphs.</p>
+	 *
+	 * @param parentInjector The <code>Injector</code> to use for dependencies the current
+	 * <code>Injector</code> can't supply
+	 */
+	
+	//private var _parentInjector:Injector;
+	/**
+	 * Returns the <code>Injector</code> used for dependencies the current
+	 * <code>Injector</code> can't supply
+	 */
+	@:isVar public var parentInjector(get, set):Injector;
+	function set_parentInjector(parentInjector:Injector):Injector
+	{
+		this.parentInjector = parentInjector;
+		return this.parentInjector;
+	}
+
+	/**
+	 * Returns the <code>Injector</code> used for dependencies the current
+	 * <code>Injector</code> can't supply
+	 */
+	function get_parentInjector():Injector
+	{
+		return this.parentInjector;
+	}
+	
+	
+	//private var _applicationDomain:ApplicationDomain;
+	@:isVar public var applicationDomain(get, set):ApplicationDomain;
+	function set_applicationDomain(applicationDomain:ApplicationDomain = null):ApplicationDomain
+	{
+		if (applicationDomain != null) this.applicationDomain = applicationDomain;
+		else this.applicationDomain = ApplicationDomain.currentDomain;
+		return this.applicationDomain;
+	}
+	
+	function get_applicationDomain():ApplicationDomain
+	{
+		return this.applicationDomain;
+	}
+	
+	
+	
 	private var _classDescriptor:TypeDescriptor;
 	private var _mappings:Map<String,InjectionMapping>;
 	
 	private var _mappingsInProcess:Map<String,Bool>;
 	private var _managedObjects:Map<String,Dynamic>;
 	private var _reflector:Reflector;
-	private var _fallbackProvider:FallbackDependencyProvider;
-	private var _blockParentFallbackProvider:Bool = false;
+	
+	
+	//private var _fallbackProvider:FallbackDependencyProvider;
+	@:isVar public var fallbackProvider(get, set):FallbackDependencyProvider;
+	function get_fallbackProvider():FallbackDependencyProvider
+	{
+		return this.fallbackProvider;
+	}
 
+	function set_fallbackProvider(provider:FallbackDependencyProvider):FallbackDependencyProvider
+	{
+		this.fallbackProvider = provider;
+		return provider;
+	}
+	
+	
+	
+	//private var _blockParentFallbackProvider:Bool = false;
+	@:isVar public var blockParentFallbackProvider(get, set):Bool;
+	function get_blockParentFallbackProvider():Bool
+	{
+		return this.blockParentFallbackProvider;
+	}
+	
+	function set_blockParentFallbackProvider(value:Bool):Bool
+	{
+		this.blockParentFallbackProvider = value;
+		return value;
+	}
+	
 	private static var _baseTypes:Array<String> = initBaseTypeMappingIds([Dynamic, Array, Class/*, Function*/, Bool, Float, Int, UInt, String]);
 
  	private static function initBaseTypeMappingIds(types:Array<Dynamic>):Array<String>
@@ -212,7 +288,7 @@ class Injector extends EventDispatcher
 			_reflector = new DescribeTypeReflector();
 		}
 		_classDescriptor = new TypeDescriptor(_reflector, INJECTION_POINTS_CACHE);
-		_applicationDomain = ApplicationDomain.currentDomain;
+		this.applicationDomain = ApplicationDomain.currentDomain;
 		super();
 	}
 
@@ -345,7 +421,7 @@ class Injector extends EventDispatcher
 	 */
 	public function hasManagedInstance(instance:Dynamic):Bool
 	{
-		return _managedObjects[UID.create(instance)];
+		return _managedObjects[UID.instanceID(instance)];
 	}
 
 	/**
@@ -402,14 +478,14 @@ class Injector extends EventDispatcher
 		}
 		
 		var fallbackMessage:String;
-		if (_fallbackProvider != null) {
-			fallbackMessage = "the fallbackProvider, '" + _fallbackProvider + "', was unable to fulfill this request.";
+		if (this.fallbackProvider != null) {
+			fallbackMessage = "the fallbackProvider, '" + this.fallbackProvider + "', was unable to fulfill this request.";
 		}
 		else {
 			fallbackMessage = "the injector has no fallbackProvider.";
 		}
-		/*var fallbackMessage:String = _fallbackProvider
-			? "the fallbackProvider, '" + _fallbackProvider + "', was unable to fulfill this request."
+		/*var fallbackMessage:String = this.fallbackProvider
+			? "the fallbackProvider, '" + this.fallbackProvider + "', was unable to fulfill this request."
 			: "the injector has no fallbackProvider.";*/
 		
 		throw new InjectorMissingMappingError('No mapping found for request ' + mappingId
@@ -472,7 +548,7 @@ class Injector extends EventDispatcher
 	 */
 	public function destroyInstance(instance:Dynamic):Void
 	{
-		_managedObjects[UID.create(instance)] = null;
+		_managedObjects[UID.clearInstanceID(instance)] = null;
 		var type:Class<Dynamic> = _reflector.getClass(instance);
 		var typeDescription:TypeDescription = getTypeDescription(type);
 		// FIX
@@ -519,8 +595,8 @@ class Injector extends EventDispatcher
 		_mappings = new Map<String,InjectionMapping>();
 		_mappingsInProcess = new Map<String,Bool>();
 		_managedObjects = new Map<String,Dynamic>();
-		_fallbackProvider = null;
-		_blockParentFallbackProvider = false;
+		this.fallbackProvider = null;
+		this.blockParentFallbackProvider = false;
 	}
 
 	/**
@@ -543,50 +619,7 @@ class Injector extends EventDispatcher
 		return injector;
 	}
 
-	/**
-	 * Sets the <code>Injector</code> to ask in case the current <code>Injector</code> doesn't
-	 * have a mapping for a dependency.
-	 *
-	 * <p>Parent Injectors can be nested in arbitrary depths with very little overhead,
-	 * enabling very modular setups for the managed object graphs.</p>
-	 *
-	 * @param parentInjector The <code>Injector</code> to use for dependencies the current
-	 * <code>Injector</code> can't supply
-	 */
 	
-	/**
-	 * Returns the <code>Injector</code> used for dependencies the current
-	 * <code>Injector</code> can't supply
-	 */
-	public var parentInjector(get, set):Injector;
-	
-	public function set_parentInjector(parentInjector:Injector):Injector
-	{
-		_parentInjector = parentInjector;
-		return _parentInjector;
-	}
-
-	/**
-	 * Returns the <code>Injector</code> used for dependencies the current
-	 * <code>Injector</code> can't supply
-	 */
-	public function get_parentInjector():Injector
-	{
-		return _parentInjector;
-	}
-	
-	public var applicationDomain(get, set):ApplicationDomain;
-	public function set_applicationDomain(applicationDomain:ApplicationDomain = null):ApplicationDomain
-	{
-		if (applicationDomain != null) _applicationDomain = applicationDomain;
-		else _applicationDomain = ApplicationDomain.currentDomain;
-		return _applicationDomain;
-	}
-	
-	public function get_applicationDomain():ApplicationDomain
-	{
-		return _applicationDomain;
-	}
 	
 	/**
 	 * Instructs the injector to use the description for the given type when constructing or
@@ -625,30 +658,7 @@ class Injector extends EventDispatcher
 		return _mappings[Type.getClassName(type) + '|' + name] != null;
 	}
 
-	public var fallbackProvider(get, set):FallbackDependencyProvider;
 	
-	public function get_fallbackProvider():FallbackDependencyProvider
-	{
-		return _fallbackProvider;
-	}
-
-	public function set_fallbackProvider(provider:FallbackDependencyProvider):FallbackDependencyProvider
-	{
-		_fallbackProvider = provider;
-		return provider;
-	}
-	
-	public var blockParentFallbackProvider(get, set):Bool;
-	public function get_blockParentFallbackProvider():Bool
-	{
-		return _blockParentFallbackProvider;
-	}
-	
-	public function set_blockParentFallbackProvider(value:Bool):Bool
-	{
-		_blockParentFallbackProvider = value;
-		return value;
-	}
 	
 	//----------------------             Internal Methods               ----------------------//
 	public static function purgeInjectionPointsCache():Void
@@ -707,13 +717,13 @@ class Injector extends EventDispatcher
 			return null;
 		}
 
-		if (_fallbackProvider != null && _fallbackProvider.prepareNextRequest(mappingId))
+		if (this.fallbackProvider != null && this.fallbackProvider.prepareNextRequest(mappingId))
 		{
-			return _fallbackProvider;
+			return this.fallbackProvider;
 		}
-		if (consultParents && _blockParentFallbackProvider && _parentInjector != null)
+		if (consultParents && this.blockParentFallbackProvider && this.parentInjector != null)
 		{
-			return _parentInjector.getDefaultProvider(mappingId,  consultParents);
+			return this.parentInjector.getDefaultProvider(mappingId,  consultParents);
 		}
 		return null;
 	}
@@ -755,7 +765,7 @@ class Injector extends EventDispatcher
 		}
 		if (description.preDestroyMethods != null)
 		{
-			_managedObjects[UID.create(target)] = target;
+			_managedObjects[UID.instanceID(target)] = target;
 		}
 		
 		hasEventListener(InjectionEvent.POST_CONSTRUCT) && dispatchEvent(new InjectionEvent(InjectionEvent.POST_CONSTRUCT, target, targetType));

@@ -26,7 +26,7 @@ class TypeDescriptor
 
 	public function getDescription(type:Class<Dynamic>):TypeDescription
 	{
-		var id = UID.create(type);
+		var id = UID.classID(type);
 		//get type description or cache it if the given type wasn't encountered before
 		if (_descriptionsCache[id] == null) _descriptionsCache[id] = _reflector.describeInjections(type);
 		
@@ -36,6 +36,6 @@ class TypeDescriptor
 
 	public function addDescription(type:Class<Dynamic>, description:TypeDescription):Void
 	{
-		_descriptionsCache[UID.create(type)] = description;
+		_descriptionsCache[UID.classID(type)] = description;
 	}
 }
