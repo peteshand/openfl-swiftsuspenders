@@ -9,6 +9,7 @@ package org.swiftsuspenders;
 
 import avmplus.DescribeTypeJSON;
 import openfl.errors.Error;
+import org.swiftsuspenders.utils.CallProxy;
 import org.swiftsuspenders.utils.UID;
 
 import openfl.events.EventDispatcher;
@@ -256,7 +257,7 @@ class Injector extends EventDispatcher
 		return value;
 	}
 	
-	private static var _baseTypes:Array<String> = initBaseTypeMappingIds([Dynamic, Array, Class/*, Function*/, Bool, Float, Int, UInt, String]);
+	private static var _baseTypes:Array<String> = initBaseTypeMappingIds([Dynamic, Array, Class/*, Function*//*, Bool*/, Float, Int, UInt, String]);
 
  	private static function initBaseTypeMappingIds(types:Array<Dynamic>):Array<String>
 	{
@@ -264,7 +265,7 @@ class Injector extends EventDispatcher
 		var returnArray = new Array<String>();
 		for (i in 0...types.length) 
 		{
-			returnArray.push(Type.getClassName(types[i]) + '|');
+			returnArray.push(CallProxy.getClassName(types[i]) + '|');
 		}
 		return returnArray;
 	}
@@ -311,7 +312,7 @@ class Injector extends EventDispatcher
 	 */
 	public function map(type:Class<Dynamic>, name:String = ''):InjectionMapping
 	{
-		var mappingId:String = Type.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
 		if (_mappings[mappingId] != null) return _mappings[mappingId];
 		return createMapping(type, name, mappingId);
 	}
@@ -331,7 +332,7 @@ class Injector extends EventDispatcher
 	 */
 	public function unmap(type:Class<Dynamic>, name:String = ''):Void
 	{
-		var mappingId:String = Type.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
 		var mapping:InjectionMapping = _mappings[mappingId];
 		if (mapping != null && mapping.isSealed)
 		{
@@ -360,7 +361,7 @@ class Injector extends EventDispatcher
 	 */
 	public function satisfies(type:Class<Dynamic>, name:String = ''):Bool
 	{
-		var mappingId:String = Type.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
 		return getProvider(mappingId, true) != null;
 	}
 
@@ -379,7 +380,7 @@ class Injector extends EventDispatcher
 	public function satisfiesDirectly(type:Class<Dynamic>, name:String = ''):Bool
 	{
 		return hasDirectMapping(type, name)
-			|| getDefaultProvider(Type.getClassName(type) + '|' + name, false) != null;
+			|| getDefaultProvider(CallProxy.getClassName(type) + '|' + name, false) != null;
 	}
 
 	/**
@@ -401,7 +402,7 @@ class Injector extends EventDispatcher
 	 */
 	public function getMapping(type:Class<Dynamic>, name:String = ''):InjectionMapping
 	{
-		var mappingId:String = Type.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
 		var mapping:InjectionMapping = _mappings[mappingId];
 		if (mapping == null)
 		{
@@ -459,7 +460,7 @@ class Injector extends EventDispatcher
 	 */
 	public function getInstance(type:Class<Dynamic>, name:String = '', targetType:Class<Dynamic> = null) :Dynamic
 	{
-		var mappingId:String = Type.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
 		var provider:DependencyProvider;
 		if (getProvider(mappingId) != null) {
 			provider = getProvider(mappingId);
@@ -527,7 +528,7 @@ class Injector extends EventDispatcher
 		if(!canBeInstantiated(type))
 		{
 			throw new InjectorInterfaceConstructionError(
-				"Can't instantiate interface " + Type.getClassName(type));
+				"Can't instantiate interface " + CallProxy.getClassName(type));
 		}
 		var description:TypeDescription = _classDescriptor.getDescription(type);
 		var instance :Dynamic = description.ctor.createInstance(type, this);
@@ -650,12 +651,12 @@ class Injector extends EventDispatcher
 	
 	public function hasMapping(type:Class<Dynamic>, name:String = ''):Bool
 	{
-		return getProvider(Type.getClassName(type) + '|' + name) != null;
+		return getProvider(CallProxy.getClassName(type) + '|' + name) != null;
 	}
 	
 	public function hasDirectMapping(type:Class<Dynamic>, name:String = ''):Bool
 	{
-		return _mappings[Type.getClassName(type) + '|' + name] != null;
+		return _mappings[CallProxy.getClassName(type) + '|' + name] != null;
 	}
 
 	
@@ -676,9 +677,13 @@ class Injector extends EventDispatcher
 	{
 		var softProvider:DependencyProvider = null;
 		var injector:Injector = this;
+		
+		
+		
 		while (injector != null)
 		{
 			var provider:DependencyProvider = injector.providerMappings[mappingId];
+			
 			if (provider != null)
 			{
 				if (Std.is(provider, SoftDependencyProvider))
@@ -692,6 +697,7 @@ class Injector extends EventDispatcher
 					injector = injector.parentInjector;
 					continue;
 				}
+				
 				return provider;
 			}
 			injector = injector.parentInjector;

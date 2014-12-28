@@ -8,6 +8,7 @@
 package org.swiftsuspenders.reflection;
 
 import avmplus.DescribeTypeJSON;
+import org.swiftsuspenders.utils.CallProxy;
 
 import org.swiftsuspenders.errors.InjectorError;
 import org.swiftsuspenders.typedescriptions.ConstructorInjectionPoint;
@@ -30,7 +31,7 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 		{
 			return true;
 		}
-		var superClassName:String = Type.getClassName(superType);
+		var superClassName:String = CallProxy.getClassName(superType);
 
 		var traits:Dynamic = _descriptor.getInstanceDescription(type).traits;
 		return (cast (traits.bases, Array<Dynamic>)).indexOf(superClassName) > -1
@@ -70,7 +71,7 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 		//var parameterNames:Array<Dynamic> = (injectParameters && injectParameters.name || '').split(',');
 		// CHECK
 		var parameterNames:Array<Dynamic> = [""];
-		if (injectParameters != injectParameters && Reflect.hasField(injectParameters, "name")) {
+		if (injectParameters != injectParameters && CallProxy.hasField(injectParameters, "name")) {
 			parameterNames = Reflect.getProperty(injectParameters, "name").split(',');
 		}
 		
@@ -96,12 +97,12 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 			}
 			
 			var optional:Bool = false;
-			if (Reflect.hasField(injectParameters, "optional")) {
+			if (CallProxy.hasField(injectParameters, "optional")) {
 				if (Reflect.getProperty(injectParameters, "optional") == 'true') optional = true;
 			}
 			
 			var mappingName = '';
-			if (Reflect.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
+			if (CallProxy.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
 			
 			var parameterNames:Array<Dynamic> = mappingName.split(',');
 			var parameters:Array<Dynamic> = method.parameters;
@@ -159,11 +160,11 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 			}
 			var mappingName = '';
 			
-			if (Reflect.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
+			if (CallProxy.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
 			//var mappingName:String = injectParameters.name || '';
 			
 			var optional:Bool = false;
-			if (Reflect.hasField(injectParameters, "optional")) {
+			if (CallProxy.hasField(injectParameters, "optional")) {
 				if (Reflect.getProperty(injectParameters, "optional") == 'true') optional = true;
 			}
 			
@@ -224,7 +225,7 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 			}
 			
 			var mappingName = '';
-			if (Reflect.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
+			if (CallProxy.hasField(injectParameters, 'name')) mappingName = Reflect.getProperty(injectParameters, "name");
 			
 			var parameterNames:Array<Dynamic> = mappingName.split(',');
 			var parameters:Array<Dynamic> = method.parameters;

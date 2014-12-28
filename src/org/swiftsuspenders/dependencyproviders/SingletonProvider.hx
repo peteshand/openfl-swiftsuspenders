@@ -11,6 +11,7 @@ package org.swiftsuspenders.dependencyproviders;
 
 import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorError;
+import org.swiftsuspenders.utils.CallProxy;
 
 class SingletonProvider implements DependencyProvider
 {
@@ -56,7 +57,7 @@ class SingletonProvider implements DependencyProvider
 		if (_destroyed)
 		{
 			throw new InjectorError("Forbidden usage of unmapped singleton provider for type "
-				+ Type.getClassName(_responseType));
+				+ CallProxy.getClassName(_responseType));
 		}
 		return injector.instantiateUnmapped(_responseType);
 	}

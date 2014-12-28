@@ -28,8 +28,9 @@ class TypeDescriptor
 	{
 		var id = UID.classID(type);
 		//get type description or cache it if the given type wasn't encountered before
-		if (_descriptionsCache[id] == null) _descriptionsCache[id] = _reflector.describeInjections(type);
-		
+		if (_descriptionsCache[id] == null) {
+			_descriptionsCache[id] = _reflector.describeInjections(type);
+		}
 		//_descriptionsCache[type] = _descriptionsCache[type] || _reflector.describeInjections(type);
 		return _descriptionsCache[id];
 	}

@@ -6,6 +6,7 @@
  */
 
 package org.swiftsuspenders.reflection;
+import org.swiftsuspenders.utils.CallProxy;
 
 //import flash.utils.Proxy;
 //import flash.utils.getDefinitionByName;
@@ -52,11 +53,18 @@ class ReflectorBase
 			var classReference = Type.resolveClass("flash.display.Sprite");
 			var instance = Type.createEmptyInstance(classReference);
 			
-			return cast(getDefinitionByName(Type.getClassName(value)), Class<Dynamic>);
+			return cast(getDefinitionByName(CallProxy.getClassName(value)), Class<Dynamic>);
 			
-			//return cast(getDefinitionByName(Type.getClassName(value)), Class<Dynamic>);
+			//return cast(getDefinitionByName(CallProxy.getClassName(value)), Class<Dynamic>);
 		}*/
-		return value.constructor;
+		
+		
+		
+		/*#if js
+			return untyped __typeof__(value);
+		#else */
+			return value.constructor;
+		//#end
 	}
 
 	public function getFQCN(value :Dynamic, replaceColons:Bool = false):String
@@ -79,7 +87,7 @@ class ReflectorBase
 		}
 		else
 		{
-			fqcn = Type.getClassName(value);
+			fqcn = CallProxy.getClassName(value);
 		}
 		
 		if (replaceColons == true) {

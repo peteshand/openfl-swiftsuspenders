@@ -14,6 +14,7 @@ package org.swiftsuspenders.typedescriptions;
 import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorMissingMappingError;
 import org.swiftsuspenders.dependencyproviders.DependencyProvider;
+import org.swiftsuspenders.utils.CallProxy;
 
 class MethodInjectionPoint extends InjectionPoint
 {
@@ -71,7 +72,7 @@ class MethodInjectionPoint extends InjectionPoint
 				var errorMsg:String = 'Injector is missing a mapping to handle injection into target "';
 				errorMsg += target;
 				errorMsg += '" of type "';
-				errorMsg += Type.getClassName(targetType);
+				errorMsg += CallProxy.getClassName(targetType);
 				errorMsg += '". Target dependency: ';
 				errorMsg += parameterMappingId;
 				errorMsg += ', method: ';

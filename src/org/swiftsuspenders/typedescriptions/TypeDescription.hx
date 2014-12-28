@@ -10,6 +10,7 @@ package org.swiftsuspenders.typedescriptions;
 
 
 import org.swiftsuspenders.errors.InjectorError;
+import org.swiftsuspenders.utils.CallProxy;
 
 class TypeDescription
 {
@@ -48,7 +49,7 @@ class TypeDescription
 			throw new InjectorError('Can\'t add injection point after post construct method');
 		}
 		addInjectionPoint(new PropertyInjectionPoint(
-			Type.getClassName(type) + '|' + injectionName, fieldName, optional, metadata));
+			CallProxy.getClassName(type) + '|' + injectionName, fieldName, optional, metadata));
 		return this;
 	}
 
@@ -124,7 +125,7 @@ class TypeDescription
 		for (n in 0...parameterTypes.length)
 		{
 			var i = parameters.length - n;
-			parameters[i] = Type.getClassName(parameterTypes[i]) + '|';
+			parameters[i] = CallProxy.getClassName(parameterTypes[i]) + '|';
 			if (parameterNames[i]) parameters[i] += parameterNames[i];
 		}
 		return parameters;

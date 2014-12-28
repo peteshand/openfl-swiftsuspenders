@@ -12,6 +12,7 @@ package org.swiftsuspenders.reflection;
 import haxe.rtti.Meta;
 import haxe.xml.Fast;
 import openfl.errors.Error;
+import org.swiftsuspenders.utils.CallProxy;
 
 import org.swiftsuspenders.errors.InjectorError;
 
@@ -48,7 +49,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		factoryDescription.
 		return (factoryDescription.children().(
 			name() == "implementsInterface" || name() == "extendsClass").(
-			attribute("type") == Type.getClassName(superType)).length() > 0);*/
+			attribute("type") == CallProxy.getClassName(superType)).length() > 0);*/
 			
 		// CHECK
 		//return false;
@@ -100,13 +101,16 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		if (rtti == null) {
 			if (!isInterface(type)) trace("Warning: " + type + " missing @:rtti matadata");
 		}
-		if (rtti != null){
+		
+		if (rtti != null) {
+			
 			_currentFactoryXML = Xml.parse(rtti).firstElement();
 			_currentFactoryXMLFast = new Fast(_currentFactoryXML);
 			
 			for (elem in _currentFactoryXMLFast.elements) {
 				if (elem.name == 'new') constructorElem = elem;
 			}
+			
 		}
 		
 		var description:TypeDescription = new TypeDescription(false);
@@ -126,9 +130,9 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	function isInterface(type:Class<Dynamic>):Bool
 	{
 		// Hack to check if class is an interface by looking at its class name and seeing if it Starts with a (IU)ppercase
-		var classPath = Type.getClassName(type);
+		var classPath = CallProxy.getClassName(type);
 		var split = classPath.split(".");
-		var className:String = split[split.length-1];
+		var className:String = split[split.length - 1];
 		if (className.length <= 1) {
 			return false;
 		}
@@ -181,15 +185,31 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		//var requiredParameters:UInt = parameters.required;
 		//delete parameters.required;
 		
+		var className = Type.getClassName(type);
+		
+		
 		// FIX add injectParameters
 		var injectParameters:Map<String,Dynamic> = null;
 		
 		
+		
+		
 		var parameterNames:Array<String> = constructorElem.node.f.att.a.split(":");
 		//var parameterValues:Array<String> = constructorElem.node.f.att.v.split(":");
-		
 		var parameters:Array<String> = [];
-		var count = 0;
+		
+		var constructorXml = constructorElem.x;
+		for (node in constructorXml.firstElement().iterator()) 
+		{
+			if(node.nodeType == Xml.Element ){
+				var nodeFast = new Fast(node);
+				parameters.push(nodeFast.att.path + "|");
+			}
+		}
+		
+		
+		
+		/*var count = 0;
 		for (i in constructorElem.node.f.nodes.c.iterator()) 
 		{
 			parameters[count] = i.att.path + "|";
@@ -200,11 +220,11 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		{
 			parameters[count] = i.att.path + "|";
 			count += 2;
-		}
+		}*/
 		parameters.pop();
-		if (parameters.length == 1) {
+		/*if (parameters.length == 1) {
 			if (parameters[0] == null) parameters.pop();
-		}
+		}*/
 		
 		var requiredParameters:UInt = 0;
 		for (j in 0...parameterNames.length) 
@@ -252,14 +272,14 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 				}
 			}
 			
-			
-			//var mappingId:String = Type.getClassName(type) + '|';// + node.arg.(@key == 'name').attribute('value');
+			//var mappingId:String = CallProxy.getClassName(type) + '|';// + node.arg.(@key == 'name').attribute('value');
 			
 			var mappingId:String = "";
 			for (elem in _currentFactoryXMLFast.elements) {
 				if (elem.name == propertyName) {
 					// FIX missing key 
-					mappingId = elem.node.c.att.path + '|';// + node.arg.(@key == 'name').attribute('value');
+					var pathFast = new Fast(elem.x.firstElement());
+					mappingId = pathFast.att.path + '|';// + node.arg.(@key == 'name').attribute('value');
 				}
 			}
 			//var optional = Reflect.getProperty(injectParams, "optional");

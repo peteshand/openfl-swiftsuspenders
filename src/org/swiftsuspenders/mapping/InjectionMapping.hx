@@ -374,6 +374,7 @@ class InjectionMapping implements ProviderlessMapping implements UnsealedMapping
 		{
 			provider = new InjectorUsingProvider(_overridingInjector, provider);
 		}
+		
 		_creatingInjector.providerMappings[_mappingId] = provider;
 	}
 

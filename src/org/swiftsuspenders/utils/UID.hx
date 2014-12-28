@@ -43,10 +43,10 @@ class UID
 	{
 		var className = "";
 		if (Std.is(source, Class)) {
-			className = Type.getClassName(source); 
+			className = CallProxy.getClassName(source); 
 		}
 		else if (Type.getClass(source) != null) {
-			className = Type.getClassName(Type.getClass(source)); 
+			className = CallProxy.getClassName(Type.getClass(source)); 
 		}
 		return className;
 	}

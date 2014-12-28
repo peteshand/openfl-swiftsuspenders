@@ -12,6 +12,7 @@ package org.swiftsuspenders.typedescriptions;
 import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorMissingMappingError;
 import org.swiftsuspenders.dependencyproviders.DependencyProvider;
+import org.swiftsuspenders.utils.CallProxy;
 
 class PropertyInjectionPoint extends InjectionPoint
 {
@@ -39,7 +40,7 @@ class PropertyInjectionPoint extends InjectionPoint
 			{
 				return;
 			}
-			throw(new InjectorMissingMappingError('Injector is missing a mapping to handle injection into property "' + _propertyName + '" of object "' + target + '" with type "' +Type.getClassName(targetType) +'". Target dependency: "' + _mappingId + '"'));
+			throw(new InjectorMissingMappingError('Injector is missing a mapping to handle injection into property "' + _propertyName + '" of object "' + target + '" with type "' +CallProxy.getClassName(targetType) +'". Target dependency: "' + _mappingId + '"'));
 		}
 		Reflect.setProperty(target, _propertyName, provider.apply(targetType, injector, injectParameters));
 		//target[_propertyName] = provider.apply(targetType, injector, injectParameters);
