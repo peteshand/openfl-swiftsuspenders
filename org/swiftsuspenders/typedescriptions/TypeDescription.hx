@@ -21,7 +21,7 @@ class TypeDescription
 
 	//----------------------       Private / Protected Properties       ----------------------//
 	private var _postConstructAdded:Bool;
-
+	
 	//----------------------               Public Methods               ----------------------//
 	public function new(useDefaultConstructor:Bool = true)
 	{
@@ -32,7 +32,7 @@ class TypeDescription
 		
 	}
 
-	public function setConstructor(parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = Limits.IntMax, metadata:Map<Dynamic,Dynamic> = null):TypeDescription
+	public function setConstructor(parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = 0x3FFFFFFF, metadata:Map<Dynamic,Dynamic> = null):TypeDescription
 	{
 		var param:Array<Dynamic>;
 		if (parameterNames != null) param = parameterNames;
@@ -53,7 +53,7 @@ class TypeDescription
 		return this;
 	}
 
-	public function addMethodInjection(methodName:String, parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = Limits.IntMax, optional:Bool = false, metadata:Map<Dynamic,Dynamic> = null):TypeDescription
+	public function addMethodInjection(methodName:String, parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = 0x3FFFFFFF, optional:Bool = false, metadata:Map<Dynamic,Dynamic> = null):TypeDescription
 	{
 		if (_postConstructAdded)
 		{
@@ -69,7 +69,7 @@ class TypeDescription
 		return this;
 	}
 
-	public function addPostConstructMethod(methodName:String, parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = Limits.IntMax):TypeDescription
+	public function addPostConstructMethod(methodName:String, parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = 0x3FFFFFFF):TypeDescription
 	{
 		var param:Array<Dynamic>;
 		if (parameterNames != null) param = parameterNames;
@@ -82,7 +82,7 @@ class TypeDescription
 		return this;
 	}
 
-	public function addPreDestroyMethod(methodName:String, parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = Limits.IntMax):TypeDescription
+	public function addPreDestroyMethod(methodName:String, parameterTypes:Array<Dynamic>, parameterNames:Array<Dynamic> = null, requiredParameters:UInt = 0x3FFFFFFF):TypeDescription
 	{
 		var param:Array<Dynamic>;
 		if (parameterNames != null) param = parameterNames;

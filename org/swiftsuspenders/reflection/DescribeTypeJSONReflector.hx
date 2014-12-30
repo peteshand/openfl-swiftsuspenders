@@ -246,7 +246,7 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 			//if (order.toString(10) != injectParameters.order)
 			if (Std.string(order) != injectParameters.order)
 			{
-				order = Limits.IntMax;
+				order = 0x3FFFFFFF;
 			}
 			var injectionPoint = Type.createInstance( injectionPointClass, [method.name, parameters, requiredParameters, order] );
 			injectionPoints.push(injectionPoint);
