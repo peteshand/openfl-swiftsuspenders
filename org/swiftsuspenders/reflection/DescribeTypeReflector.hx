@@ -94,9 +94,15 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	
 	
 	
-
-	public function describeInjections(type:Class<Dynamic>):TypeDescription
+	
+	public function describeInjections(_type:Class<Dynamic>):TypeDescription
 	{
+		#if cpp
+			var type:Dynamic = _type;
+		#else 
+			var type:Class<Dynamic> = _type;
+		#end
+		
 		var rtti:String = untyped type.__rtti;
 		if (rtti == null) {
 			if (!isInterface(type)) trace("Warning: " + type + " missing @:rtti matadata");

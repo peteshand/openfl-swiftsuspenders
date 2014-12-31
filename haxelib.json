@@ -1,13 +1,13 @@
 {
 	"name": "swiftsuspenders",
-	"url": "https://github.com/peteshand/openfl-robotlegs-framework",
+	"url": "http://blog.peteshand.net/robotlegs-for-haxe",
 	"license": "MIT",
 	"tags": [ "dependency-injection", "openfl","flash", "js", "web" ],
 	"description": "This is an OpenFL 2.x/Haxe port of the popular AS3 metadata driven IOC (Inversion Of Control) solution SwiftSuspenders",
-	"version": "2.1.0-alpha",
+	"version": "0.0.1-alpha",
 	"releasenote": "Alpha release: Limited to property and constructor injection. requires @:rtti Meta tag. Currently Limited to Flash & HTML5 targets.",
-	"contributors": [ "P.J.Shand" ],
+	"contributors": [ "p.j.shand" ],
 	"dependencies": {
-		"openfl": "2.0.1"
+		"openfl": "2.1.8"
 	}
 }
