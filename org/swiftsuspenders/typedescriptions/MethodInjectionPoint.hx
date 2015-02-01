@@ -15,6 +15,7 @@ import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorMissingMappingError;
 import org.swiftsuspenders.dependencyproviders.DependencyProvider;
 import org.swiftsuspenders.utils.CallProxy;
+import robotlegs.bender.extensions.away3d.impl.Away3DViewMap;
 
 class MethodInjectionPoint extends InjectionPoint
 {
@@ -39,6 +40,7 @@ class MethodInjectionPoint extends InjectionPoint
 	override public function applyInjection(target:Dynamic, targetType:Class<Dynamic>, injector:Injector):Void
 	{
 		var p:Array<Dynamic> = gatherParameterValues(target, targetType, injector);
+		
 		if (p.length >= _requiredParameters)
 		{
 			
@@ -72,7 +74,7 @@ class MethodInjectionPoint extends InjectionPoint
 				var errorMsg:String = 'Injector is missing a mapping to handle injection into target "';
 				errorMsg += target;
 				errorMsg += '" of type "';
-				errorMsg += CallProxy.getClassName(targetType);
+				errorMsg += CallProxy.replaceClassName(targetType);
 				errorMsg += '". Target dependency: ';
 				errorMsg += parameterMappingId;
 				errorMsg += ', method: ';

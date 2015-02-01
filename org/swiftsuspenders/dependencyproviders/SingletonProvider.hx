@@ -57,7 +57,7 @@ class SingletonProvider implements DependencyProvider
 		if (_destroyed)
 		{
 			throw new InjectorError("Forbidden usage of unmapped singleton provider for type "
-				+ CallProxy.getClassName(_responseType));
+				+ CallProxy.replaceClassName(_responseType));
 		}
 		return injector.instantiateUnmapped(_responseType);
 	}

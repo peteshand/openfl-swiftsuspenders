@@ -13,6 +13,7 @@ import haxe.rtti.Meta;
 import haxe.xml.Fast;
 import openfl.errors.Error;
 import org.swiftsuspenders.utils.CallProxy;
+import robotlegs.bender.extensions.away3d.impl.Away3DViewMap;
 
 import org.swiftsuspenders.errors.InjectorError;
 
@@ -30,7 +31,16 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	private var _currentFactoryXML:Xml;
 	private var _currentFactoryXMLFast:Fast;
 	var constructorElem:Fast;
-
+	var rtti:String;
+	var extendPath:String;
+	
+	private var extendDescribeTypeReflector:DescribeTypeReflector;
+	var extendTypeDescription:org.swiftsuspenders.typedescriptions.TypeDescription;
+	
+	public function new()
+	{
+		super();
+	}
 	//----------------------               Public Methods               ----------------------//
 	public function typeImplements(type:Class<Dynamic>, superType:Class<Dynamic>):Bool
 	{
@@ -49,7 +59,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		factoryDescription.
 		return (factoryDescription.children().(
 			name() == "implementsInterface" || name() == "extendsClass").(
-			attribute("type") == CallProxy.getClassName(superType)).length() > 0);*/
+			attribute("type") == CallProxy.replaceClassName(superType)).length() > 0);*/
 			
 		// CHECK
 		//return false;
@@ -81,12 +91,12 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 				throw "The class name " + classOrClassName + " is not valid because of " + e + "\n" + e.getStackTrace();
 			}
 		}
-
+		
 		if (actualClass == null)
 		{
 			throw "The parameter classOrClassName must be a Class or fully qualified class name.";
 		}
-
+		
 		var classInstance = Type.createEmptyInstance(actualClass);
 		return Std.is(classInstance, superClass);
 	}
@@ -97,15 +107,24 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	
 	public function describeInjections(_type:Class<Dynamic>):TypeDescription
 	{
+		if (extendDescribeTypeReflector == null) {
+			extendDescribeTypeReflector = new DescribeTypeReflector();
+		}
+		
 		#if cpp
 			var type:Dynamic = _type;
 		#else 
 			var type:Class<Dynamic> = _type;
 		#end
 		
-		var rtti:String = untyped type.__rtti;
+		rtti = untyped type.__rtti;
 		if (rtti == null) {
 			if (!isInterface(type)) trace("Warning: " + type + " missing @:rtti matadata");
+		}
+		
+		if (type == Away3DViewMap) {
+			trace(this.rtti);
+			trace("*");
 		}
 		
 		if (rtti != null) {
@@ -115,6 +134,11 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 			
 			for (elem in _currentFactoryXMLFast.elements) {
 				if (elem.name == 'new') constructorElem = elem;
+				if (elem.name == 'extends') {
+					extendPath = elem.att.path;
+					var extendClass = Type.resolveClass(extendPath);
+					extendTypeDescription = extendDescribeTypeReflector.describeInjections(extendClass);
+				}
 			}
 			
 		}
@@ -130,13 +154,17 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		_currentFactoryXMLFast = null;
 		constructorElem = null;
 		
+		rtti = null;
+		extendPath = null;
+		extendTypeDescription = null;
+		
 		return description;
 	}
 	
 	function isInterface(type:Class<Dynamic>):Bool
 	{
 		// Hack to check if class is an interface by looking at its class name and seeing if it Starts with a (IU)ppercase
-		var classPath = CallProxy.getClassName(type);
+		var classPath = CallProxy.replaceClassName(type);
 		var split = classPath.split(".");
 		var className:String = split[split.length - 1];
 		if (className.length <= 1) {
@@ -161,38 +189,8 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 			description.ctor = new NoParamsConstructorInjectionPoint();
 			return;
 		}
-		// FIX
-		/*var node:Xml = _currentFactoryXML.constructor[0];
-		if (!node)
-		{
-			if (_currentFactoryXML.parent().@name == 'Dynamic'
-					|| _currentFactoryXML.extendsClass.length() > 0)
-			{
-				description.ctor = new NoParamsConstructorInjectionPoint();
-			}
-			return;
-		}
-		var injectParameters:Map<Dynamic,Dynamic> = extractNodeParameters(node.parent().metadata.arg);
-		var parameterNames:Array = (injectParameters.name || '').split(',');
-		var parameterNodes:XMLList = node.parameter;*/
 		
-		
-		/*
-		 In many cases, the flash player doesn't give us type information for constructors until
-		 the class has been instantiated at least once. Therefore, we do just that if we don't get
-		 type information for at least one parameter.
-		 */
-		// FIX
-		//if (parameterNodes.(@type == '*').length() == parameterNodes.@type.length())
-		//{
-		//	createDummyInstance(node, type);
-		//}
-		//var parameters:Array = gatherMethodParameters(parameterNodes, parameterNames);
-		//var requiredParameters:UInt = parameters.required;
-		//delete parameters.required;
-		
-		var className = Type.getClassName(type);
-		
+		var className = CallProxy.getClassName(type);
 		
 		// FIX add injectParameters
 		var injectParameters:Map<String,Dynamic> = null;
@@ -201,36 +199,8 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		
 		
 		var parameterNames:Array<String> = constructorElem.node.f.att.a.split(":");
-		//var parameterValues:Array<String> = constructorElem.node.f.att.v.split(":");
-		var parameters:Array<String> = [];
+		var parameters:Array<String> = parametersFromXml(constructorElem.x);
 		
-		var constructorXml = constructorElem.x;
-		for (node in constructorXml.firstElement().iterator()) 
-		{
-			if(node.nodeType == Xml.Element ){
-				var nodeFast = new Fast(node);
-				parameters.push(nodeFast.att.path + "|");
-			}
-		}
-		
-		
-		
-		/*var count = 0;
-		for (i in constructorElem.node.f.nodes.c.iterator()) 
-		{
-			parameters[count] = i.att.path + "|";
-			count += 2;
-		}
-		count = 1;
-		for (i in constructorElem.node.f.nodes.x.iterator()) 
-		{
-			parameters[count] = i.att.path + "|";
-			count += 2;
-		}*/
-		parameters.pop();
-		/*if (parameters.length == 1) {
-			if (parameters[0] == null) parameters.pop();
-		}*/
 		
 		var requiredParameters:UInt = 0;
 		for (j in 0...parameterNames.length) 
@@ -240,6 +210,20 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 			}
 		}
 		description.ctor = new ConstructorInjectionPoint(parameters, requiredParameters, injectParameters);
+	}
+	
+	function parametersFromXml(x:Xml):Array<String>
+	{
+		var parameters:Array<String> = [];
+		for (node in x.firstElement().iterator()) 
+		{
+			if(node.nodeType == Xml.Element ){
+				var nodeFast = new Fast(node);
+				parameters.push(nodeFast.att.path + "|");
+			}
+		}
+		parameters.pop();
+		return parameters;
 	}
 	
 	// FIX
@@ -262,9 +246,24 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	{
 		// CHECK
 		var metaFields = Meta.getFields(type);
-		
 		var fields = Reflect.fields(metaFields);
-		for (propertyName in fields) {
+		var injectFields:Array<String> = [];
+		
+		for (value in fields) {
+			
+			var metaFields1 = Reflect.getProperty(metaFields, value);
+			var fields1 = Reflect.fields(metaFields1);
+			if (fields1[0] == 'inject') {
+				injectFields.push(value);
+			}
+		}
+		
+		
+		if (extendTypeDescription != null) {
+			description.injectionPoints = extendTypeDescription.injectionPoints;
+		}
+		
+		for (propertyName in injectFields) {
 			var optional = false;
 			var injectParams:Array<String> = Reflect.getProperty(Reflect.getProperty(metaFields, propertyName), "inject");
 			if (injectParams != null){
@@ -278,16 +277,26 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 				}
 			}
 			
-			//var mappingId:String = CallProxy.getClassName(type) + '|';// + node.arg.(@key == 'name').attribute('value');
+			//var mappingId:String = CallProxy.replaceClassName(type) + '|';// + node.arg.(@key == 'name').attribute('value');
 			
 			var mappingId:String = "";
 			for (elem in _currentFactoryXMLFast.elements) {
 				if (elem.name == propertyName) {
 					// FIX missing key 
 					var pathFast = new Fast(elem.x.firstElement());
-					mappingId = pathFast.att.path + '|';// + node.arg.(@key == 'name').attribute('value');
+					if (pathFast.has.path) mappingId = pathFast.att.path + '|';// + node.arg.(@key == 'name').attribute('value');
 				}
 			}
+			
+			/*<init public="1" set="method" line="54">
+				<f a=""><x path="Void"/></f>
+				<meta><m n="PostConstruct"/></meta>
+			</init>
+			*/
+			/*<init public="1" set="method" line="54">
+				<f a=""><x path="Void"/></f>
+			</init>*/
+			
 			//var optional = Reflect.getProperty(injectParams, "optional");
 			
 			// FIX missing injectParameters
@@ -333,7 +342,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 
 	private function addPostConstructMethodPoints(description:TypeDescription, type:Class<Dynamic>):Void
 	{
-		var injectionPoints:Array<Dynamic> = gatherOrderedInjectionPointsForTag(PostConstructInjectionPoint, 'PostConstruct');
+		var injectionPoints:Array<Dynamic> = gatherOrderedInjectionPointsForTag(PostConstructInjectionPoint, 'PostConstruct', type);
 		
 		var length = injectionPoints.length;
 		for (i in 0...length)
@@ -344,7 +353,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 
 	private function addPreDestroyMethodPoints(description:TypeDescription, type:Class<Dynamic>):Void
 	{
-		var injectionPoints:Array<Dynamic> = gatherOrderedInjectionPointsForTag(PreDestroyInjectionPoint, 'PreDestroy');
+		var injectionPoints:Array<Dynamic> = gatherOrderedInjectionPointsForTag(PreDestroyInjectionPoint, 'PreDestroy', type);
 		
 		if (injectionPoints.length == 0)
 		{
@@ -396,9 +405,62 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		return null;
 	}
 
-	private function gatherOrderedInjectionPointsForTag(injectionPointType:Class<Dynamic>, tag:String):Array<Dynamic>
+	private function gatherOrderedInjectionPointsForTag(injectionPointType:Class<Dynamic>, tag:String, type:Class<Dynamic>):Array<Dynamic>
 	{
 		var injectionPoints:Array<Dynamic> = [];
+		
+		var metaFields = Meta.getFields(type);
+		var fields = Reflect.fields(metaFields);
+		var injectMethods:Array<String> = [];
+		
+		for (value in fields) {
+			
+			var metaFields1 = Reflect.getProperty(metaFields, value);
+			var fields1 = Reflect.fields(metaFields1);
+			if (fields1[0] == tag) {
+				injectMethods.push(value);
+				
+				for (node in _currentFactoryXML.iterator()) 
+				{
+					if (node.nodeType == Xml.Element ) {
+						if (node.nodeName == value){
+							trace("node = " + node);
+							var parameterNames:Array<String> = new Fast(node).node.f.att.a.split(":");
+							var requiredParameters:Int = 0;
+							for (i in 0...parameterNames.length) 
+							{
+								trace('parameterNames[i] = ' + parameterNames[i]);
+								trace("parameterNames[i].indexOf('?') = " + parameterNames[i].indexOf("?"));
+								if (parameterNames[i].indexOf("?") != 0) {
+									requiredParameters++;
+								}
+							}
+							requiredParameters--;
+							var parameters:Array<String> = parametersFromXml(node);
+							trace("parameterNames = " + parameterNames);
+							trace("parameters = " + parameters);
+							trace("requiredParameters = " + requiredParameters);
+							
+							// FIX ORDER
+							//var injectionPoint = Type.createInstance(injectionPointType, [node.nodeName, parameters, requiredParameters, 0x3FFFFFFF]); // ORDER: isNaN(order) ? Limits.IntMax:order
+							var injectionPoint = CallProxy.createInstance(injectionPointType, [node.nodeName, parameters, requiredParameters, 0x3FFFFFFF]); // ORDER: isNaN(order) ? Limits.IntMax:order
+							
+							injectionPoints.push(injectionPoint);
+						}
+						//var nodeFast = new Fast(node);
+						//parameters.push(nodeFast.att.path + "|");
+						
+						
+					}
+				}
+				
+				
+				
+				trace("*");
+			}
+		}
+		
+		
 		// FIX
 		/*for (var node:Xml in _currentFactoryXML..metadata.(@name == tag))
 		{

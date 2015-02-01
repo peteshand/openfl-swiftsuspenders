@@ -31,7 +31,7 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 		{
 			return true;
 		}
-		var superClassName:String = CallProxy.getClassName(superType);
+		var superClassName:String = CallProxy.replaceClassName(superType);
 
 		var traits:Dynamic = _descriptor.getInstanceDescription(type).traits;
 		return (cast (traits.bases, Array<Dynamic>)).indexOf(superClassName) > -1
@@ -248,7 +248,8 @@ class DescribeTypeJSONReflector extends ReflectorBase implements Reflector
 			{
 				order = 0x3FFFFFFF;
 			}
-			var injectionPoint = Type.createInstance( injectionPointClass, [method.name, parameters, requiredParameters, order] );
+			//var injectionPoint = Type.createInstance( injectionPointClass, [method.name, parameters, requiredParameters, order] );
+			var injectionPoint = CallProxy.createInstance( injectionPointClass, [method.name, parameters, requiredParameters, order] );
 			injectionPoints.push(injectionPoint);
 		}
 		//FIX

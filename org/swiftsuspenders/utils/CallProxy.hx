@@ -12,10 +12,18 @@ class CallProxy
 		
 	}
 	
-	public static function getClassName(c : Class<Dynamic> ) : String
+	public static function replaceClassName(c:Class<Dynamic>):String
+	{
+		var className = CallProxy.getClassName(c);
+		className = className.split("flash.").join("openfl.");
+		return className;
+	}
+	
+	public static function getClassName(c:Class<Dynamic>):String
 	{
 		var className = Type.getClassName(c);
-		className = className.split("flash.").join("openfl.");
+		trace("c = " + c);
+		trace("className = " + className);
 		return className;
 	}
 	
@@ -45,5 +53,13 @@ class CallProxy
 			var hasField = Reflect.hasField(o, field);
 			return hasField;
 		#end
+	}
+	
+	public static function createInstance<T>( cl : Class<T>, args : Array<Dynamic> ) : T
+	{
+		var instance = Type.createInstance(cl, args);
+		//trace("instance " + cl);
+		//trace(instance);
+		return instance;
 	}
 }

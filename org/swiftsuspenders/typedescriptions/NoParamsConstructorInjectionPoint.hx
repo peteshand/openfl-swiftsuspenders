@@ -8,6 +8,7 @@
 package org.swiftsuspenders.typedescriptions;
 
 import org.swiftsuspenders.Injector;
+import org.swiftsuspenders.utils.CallProxy;
 
 class NoParamsConstructorInjectionPoint extends ConstructorInjectionPoint
 {
@@ -18,6 +19,7 @@ class NoParamsConstructorInjectionPoint extends ConstructorInjectionPoint
 
 	override public function createInstance(type:Class<Dynamic>, injector:Injector):Dynamic
 	{
-		return Type.createInstance(type, []);
+		//return Type.createInstance(type, []);
+		return CallProxy.createInstance(type, []);
 	}
 }

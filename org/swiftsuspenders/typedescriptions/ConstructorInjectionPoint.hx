@@ -10,6 +10,7 @@ package org.swiftsuspenders.typedescriptions;
 
 import openfl.errors.Error;
 import org.swiftsuspenders.Injector;
+import org.swiftsuspenders.utils.CallProxy;
 
 class ConstructorInjectionPoint extends MethodInjectionPoint
 {
@@ -27,7 +28,7 @@ class ConstructorInjectionPoint extends MethodInjectionPoint
 		
 		switch (p.length)
 		{
-			case 0:result = Type.createInstance( type, [] );
+			/*case 0:result = Type.createInstance( type, [] );
 			case 1:result = Type.createInstance( type, [p[0]] );
 			case 2:result = Type.createInstance( type, [p[0], p[1]] );
 			case 3:result = Type.createInstance( type, [p[0], p[1], p[2]] );
@@ -38,6 +39,19 @@ class ConstructorInjectionPoint extends MethodInjectionPoint
 			case 8:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]] );
 			case 9:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]] );
 			case 10:result = Type.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]] );
+			default: throw new Error("The constructor for " + type + " has too many arguments, maximum is 10");*/
+			
+			case 0:result = CallProxy.createInstance( type, [] );
+			case 1:result = CallProxy.createInstance( type, [p[0]] );
+			case 2:result = CallProxy.createInstance( type, [p[0], p[1]] );
+			case 3:result = CallProxy.createInstance( type, [p[0], p[1], p[2]] );
+			case 4:result = CallProxy.createInstance( type, [p[0], p[1], p[2], p[3]] );
+			case 5:result = CallProxy.createInstance( type, [p[0], p[1], p[2], p[3], p[4]] );
+			case 6:result = CallProxy.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5]] );
+			case 7:result = CallProxy.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6]] );
+			case 8:result = CallProxy.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]] );
+			case 9:result = CallProxy.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]] );
+			case 10:result = CallProxy.createInstance( type, [p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]] );
 			default: throw new Error("The constructor for " + type + " has too many arguments, maximum is 10");
 		}
 		p = [];

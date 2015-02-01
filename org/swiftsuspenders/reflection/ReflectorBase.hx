@@ -53,9 +53,9 @@ class ReflectorBase
 			var classReference = Type.resolveClass("flash.display.Sprite");
 			var instance = Type.createEmptyInstance(classReference);
 			
-			return cast(getDefinitionByName(CallProxy.getClassName(value)), Class<Dynamic>);
+			return cast(getDefinitionByName(CallProxy.replaceClassName(value)), Class<Dynamic>);
 			
-			//return cast(getDefinitionByName(CallProxy.getClassName(value)), Class<Dynamic>);
+			//return cast(getDefinitionByName(CallProxy.replaceClassName(value)), Class<Dynamic>);
 		}*/
 		
 		
@@ -87,7 +87,7 @@ class ReflectorBase
 		}
 		else
 		{
-			fqcn = CallProxy.getClassName(value);
+			fqcn = CallProxy.replaceClassName(value);
 		}
 		
 		if (replaceColons == true) {

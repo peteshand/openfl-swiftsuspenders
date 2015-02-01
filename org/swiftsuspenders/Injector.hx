@@ -8,6 +8,8 @@
 package org.swiftsuspenders;
 
 import avmplus.DescribeTypeJSON;
+import com.imag.core.view.BaseViewConfig;
+import com.imag.robotlegsHaxe.view.ViewConfig;
 import openfl.errors.Error;
 import org.swiftsuspenders.utils.CallProxy;
 import org.swiftsuspenders.utils.UID;
@@ -265,7 +267,7 @@ class Injector extends EventDispatcher
 		var returnArray = new Array<String>();
 		for (i in 0...types.length) 
 		{
-			returnArray.push(CallProxy.getClassName(types[i]) + '|');
+			returnArray.push(CallProxy.replaceClassName(types[i]) + '|');
 		}
 		return returnArray;
 	}
@@ -312,7 +314,7 @@ class Injector extends EventDispatcher
 	 */
 	public function map(type:Class<Dynamic>, name:String = ''):InjectionMapping
 	{
-		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.replaceClassName(type) + '|' + name;
 		if (_mappings[mappingId] != null) return _mappings[mappingId];
 		return createMapping(type, name, mappingId);
 	}
@@ -332,7 +334,7 @@ class Injector extends EventDispatcher
 	 */
 	public function unmap(type:Class<Dynamic>, name:String = ''):Void
 	{
-		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.replaceClassName(type) + '|' + name;
 		var mapping:InjectionMapping = _mappings[mappingId];
 		if (mapping != null && mapping.isSealed)
 		{
@@ -361,7 +363,7 @@ class Injector extends EventDispatcher
 	 */
 	public function satisfies(type:Class<Dynamic>, name:String = ''):Bool
 	{
-		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.replaceClassName(type) + '|' + name;
 		return getProvider(mappingId, true) != null;
 	}
 
@@ -380,7 +382,7 @@ class Injector extends EventDispatcher
 	public function satisfiesDirectly(type:Class<Dynamic>, name:String = ''):Bool
 	{
 		return hasDirectMapping(type, name)
-			|| getDefaultProvider(CallProxy.getClassName(type) + '|' + name, false) != null;
+			|| getDefaultProvider(CallProxy.replaceClassName(type) + '|' + name, false) != null;
 	}
 
 	/**
@@ -402,7 +404,7 @@ class Injector extends EventDispatcher
 	 */
 	public function getMapping(type:Class<Dynamic>, name:String = ''):InjectionMapping
 	{
-		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.replaceClassName(type) + '|' + name;
 		var mapping:InjectionMapping = _mappings[mappingId];
 		if (mapping == null)
 		{
@@ -460,7 +462,7 @@ class Injector extends EventDispatcher
 	 */
 	public function getInstance(type:Class<Dynamic>, name:String = '', targetType:Class<Dynamic> = null) :Dynamic
 	{
-		var mappingId:String = CallProxy.getClassName(type) + '|' + name;
+		var mappingId:String = CallProxy.replaceClassName(type) + '|' + name;
 		var provider:DependencyProvider;
 		if (getProvider(mappingId) != null) {
 			provider = getProvider(mappingId);
@@ -509,8 +511,11 @@ class Injector extends EventDispatcher
 	public function getOrCreateNewInstance(type:Class<Dynamic>) :Dynamic
 	{
 		// CHECK
-		if (satisfies(type)) return getInstance(type);
+		var _satisfies = satisfies(type);
+		if (_satisfies) return getInstance(type);
 		else return instantiateUnmapped(type);
+		
+		
 		//return satisfies(type) && getInstance(type) || instantiateUnmapped(type);
 	}
 
@@ -528,7 +533,7 @@ class Injector extends EventDispatcher
 		if(!canBeInstantiated(type))
 		{
 			throw new InjectorInterfaceConstructionError(
-				"Can't instantiate interface " + CallProxy.getClassName(type));
+				"Can't instantiate interface " + CallProxy.replaceClassName(type));
 		}
 		var description:TypeDescription = _classDescriptor.getDescription(type);
 		var instance :Dynamic = description.ctor.createInstance(type, this);
@@ -651,12 +656,12 @@ class Injector extends EventDispatcher
 	
 	public function hasMapping(type:Class<Dynamic>, name:String = ''):Bool
 	{
-		return getProvider(CallProxy.getClassName(type) + '|' + name) != null;
+		return getProvider(CallProxy.replaceClassName(type) + '|' + name) != null;
 	}
 	
 	public function hasDirectMapping(type:Class<Dynamic>, name:String = ''):Bool
 	{
-		return _mappings[CallProxy.getClassName(type) + '|' + name] != null;
+		return _mappings[CallProxy.replaceClassName(type) + '|' + name] != null;
 	}
 
 	
