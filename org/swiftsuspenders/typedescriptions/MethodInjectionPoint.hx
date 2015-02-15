@@ -15,7 +15,6 @@ import org.swiftsuspenders.Injector;
 import org.swiftsuspenders.errors.InjectorMissingMappingError;
 import org.swiftsuspenders.dependencyproviders.DependencyProvider;
 import org.swiftsuspenders.utils.CallProxy;
-import robotlegs.bender.extensions.away3d.impl.Away3DViewMap;
 
 class MethodInjectionPoint extends InjectionPoint
 {

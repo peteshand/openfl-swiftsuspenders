@@ -13,7 +13,6 @@ import haxe.rtti.Meta;
 import haxe.xml.Fast;
 import openfl.errors.Error;
 import org.swiftsuspenders.utils.CallProxy;
-import robotlegs.bender.extensions.away3d.impl.Away3DViewMap;
 
 import org.swiftsuspenders.errors.InjectorError;
 
@@ -25,6 +24,7 @@ import org.swiftsuspenders.typedescriptions.PreDestroyInjectionPoint;
 import org.swiftsuspenders.typedescriptions.PropertyInjectionPoint;
 import org.swiftsuspenders.typedescriptions.TypeDescription;
 
+@:rtti
 class DescribeTypeReflector extends ReflectorBase implements Reflector
 {
 	//----------------------       Private / Protected Properties       ----------------------//
@@ -119,12 +119,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		
 		rtti = untyped type.__rtti;
 		if (rtti == null) {
-			if (!isInterface(type)) trace("Warning: " + type + " missing @:rtti matadata");
-		}
-		
-		if (type == Away3DViewMap) {
-			trace(this.rtti);
-			trace("*");
+			if (!isInterface(type)) trace("Warning: " + CallProxy.getClassName(type) + " missing @:rtti matadata");
 		}
 		
 		if (rtti != null) {
@@ -417,29 +412,35 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 			
 			var metaFields1 = Reflect.getProperty(metaFields, value);
 			var fields1 = Reflect.fields(metaFields1);
-			if (fields1[0] == tag) {
+			
+			//trace("tag = " + tag);
+			//trace("fields1[0] = " + fields1[0]);
+			if (fields1[0].toLowerCase() == tag.toLowerCase()) {
 				injectMethods.push(value);
 				
+				
+					
 				for (node in _currentFactoryXML.iterator()) 
 				{
 					if (node.nodeType == Xml.Element ) {
+						
 						if (node.nodeName == value){
-							trace("node = " + node);
+							//trace("node = " + node);
 							var parameterNames:Array<String> = new Fast(node).node.f.att.a.split(":");
 							var requiredParameters:Int = 0;
 							for (i in 0...parameterNames.length) 
 							{
-								trace('parameterNames[i] = ' + parameterNames[i]);
-								trace("parameterNames[i].indexOf('?') = " + parameterNames[i].indexOf("?"));
+								//trace('parameterNames[i] = ' + parameterNames[i]);
+								//trace("parameterNames[i].indexOf('?') = " + parameterNames[i].indexOf("?"));
 								if (parameterNames[i].indexOf("?") != 0) {
 									requiredParameters++;
 								}
 							}
 							requiredParameters--;
 							var parameters:Array<String> = parametersFromXml(node);
-							trace("parameterNames = " + parameterNames);
-							trace("parameters = " + parameters);
-							trace("requiredParameters = " + requiredParameters);
+							//trace("parameterNames = " + parameterNames);
+							//trace("parameters = " + parameters);
+							//trace("requiredParameters = " + requiredParameters);
 							
 							// FIX ORDER
 							//var injectionPoint = Type.createInstance(injectionPointType, [node.nodeName, parameters, requiredParameters, 0x3FFFFFFF]); // ORDER: isNaN(order) ? Limits.IntMax:order
@@ -456,7 +457,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 				
 				
 				
-				trace("*");
+				//trace("*");
 			}
 		}
 		

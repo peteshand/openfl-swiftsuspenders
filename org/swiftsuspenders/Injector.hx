@@ -8,8 +8,6 @@
 package org.swiftsuspenders;
 
 import avmplus.DescribeTypeJSON;
-import com.imag.core.view.BaseViewConfig;
-import com.imag.robotlegsHaxe.view.ViewConfig;
 import openfl.errors.Error;
 import org.swiftsuspenders.utils.CallProxy;
 import org.swiftsuspenders.utils.UID;

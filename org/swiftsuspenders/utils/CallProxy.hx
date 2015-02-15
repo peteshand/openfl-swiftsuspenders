@@ -22,8 +22,6 @@ class CallProxy
 	public static function getClassName(c:Class<Dynamic>):String
 	{
 		var className = Type.getClassName(c);
-		trace("c = " + c);
-		trace("className = " + className);
 		return className;
 	}
 	
@@ -58,8 +56,6 @@ class CallProxy
 	public static function createInstance<T>( cl : Class<T>, args : Array<Dynamic> ) : T
 	{
 		var instance = Type.createInstance(cl, args);
-		//trace("instance " + cl);
-		//trace(instance);
 		return instance;
 	}
 }
