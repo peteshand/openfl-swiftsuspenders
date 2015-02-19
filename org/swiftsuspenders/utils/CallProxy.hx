@@ -27,15 +27,17 @@ class CallProxy
 	
 	public static function hasField( o:Dynamic, field:String):Bool
 	{
+		var fields;
 		var clazz:Class<Dynamic>;
 		if (Std.is(o, Class)) {
 			clazz = o;
-			
+			fields = Type.getInstanceFields(clazz);
 		}
 		else {
-			clazz = Type.getClass(o);
+			fields = Reflect.fields(o);
+			
 		}
-		var fields = Type.getInstanceFields(clazz);
+		
 		for (i in 0...fields.length) 
 		{
 			if (fields[i] == field) return true;
