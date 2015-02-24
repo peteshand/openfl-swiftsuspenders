@@ -25,7 +25,7 @@ import org.swiftsuspenders.typedescriptions.PropertyInjectionPoint;
 import org.swiftsuspenders.typedescriptions.TypeDescription;
 
 @:rtti
-class DescribeTypeReflector extends ReflectorBase implements Reflector
+class DescribeTypeRTTIReflector extends ReflectorBase implements Reflector
 {
 	//----------------------       Private / Protected Properties       ----------------------//
 	private var _currentFactoryXML:Xml;
@@ -34,7 +34,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	var rtti:String;
 	var extendPath:String;
 	
-	private var extendDescribeTypeReflector:DescribeTypeReflector;
+	private var extendDescribeTypeReflector:DescribeTypeRTTIReflector;
 	var extendTypeDescription:org.swiftsuspenders.typedescriptions.TypeDescription;
 	
 	public function new()
@@ -44,26 +44,6 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	//----------------------               Public Methods               ----------------------//
 	public function typeImplements(type:Class<Dynamic>, superType:Class<Dynamic>):Bool
 	{
-		/*if (type == superType)
-		{
-			return true;
-		}*/
-		
-		//var val = cast(type, superType);
-		/*if (val != null)
-		{
-			return true;
-		}*/
-		// CHECK
-		/*var factoryDescription:Xml = describeType(type).factory[0];
-		factoryDescription.
-		return (factoryDescription.children().(
-			name() == "implementsInterface" || name() == "extendsClass").(
-			attribute("type") == CallProxy.replaceClassName(superType)).length() > 0);*/
-			
-		// CHECK
-		//return false;
-		
 		return classExtendsOrImplements(type, superType);
 	}
 	
@@ -108,7 +88,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 	public function describeInjections(_type:Class<Dynamic>):TypeDescription
 	{
 		if (extendDescribeTypeReflector == null) {
-			extendDescribeTypeReflector = new DescribeTypeReflector();
+			extendDescribeTypeReflector = new DescribeTypeRTTIReflector();
 		}
 		
 		#if cpp
@@ -187,7 +167,7 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		
 		var className = CallProxy.getClassName(type);
 		
-		// FIX add injectParameters
+		// CHECK add injectParameters
 		var injectParameters:Map<String,Dynamic> = null;
 		
 		
@@ -364,42 +344,6 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 		}
 	}
 
-	private function gatherMethodParameters(parameterNodes:Xml/*XMLList*/, parameterNames:Array<Dynamic>):Array<Dynamic>
-	{
-		// FIX
-		/*var requiredParameters:UInt = 0;
-		var length:UInt = parameterNodes.length();
-		var parameters:Array = new Array(length);
-		for (i in 0...length)
-		{
-			var parameter:Xml = parameterNodes[i];
-			var injectionName:String = parameterNames[i] || '';
-			var parameterTypeName:String = parameter.@type;
-			var optional:Bool = parameter.@optional == 'true';
-			if (parameterTypeName == '*')
-			{
-				if (!optional)
-				{
-					throw new InjectorError('Error in method definition of injectee "' +
-						_currentFactoryXML.@type + 'Required parameters can\'t have type "*".');
-				}
-				else
-				{
-					parameterTypeName = null;
-				}
-			}
-			if (!optional)
-			{
-				requiredParameters++;
-			}
-			parameters[i] = parameterTypeName + '|' + injectionName;
-		}
-		parameters.required = requiredParameters;
-		return parameters;*/
-		
-		return null;
-	}
-
 	private function gatherOrderedInjectionPointsForTag(injectionPointType:Class<Dynamic>, tag:String, type:Class<Dynamic>):Array<Dynamic>
 	{
 		var injectionPoints:Array<Dynamic> = [];
@@ -454,31 +398,9 @@ class DescribeTypeReflector extends ReflectorBase implements Reflector
 						
 					}
 				}
-				
-				
-				
-				//trace("*");
 			}
 		}
 		
-		
-		// FIX
-		/*for (var node:Xml in _currentFactoryXML..metadata.(@name == tag))
-		{
-			var injectParameters:Map<Dynamic,Dynamic> = extractNodeParameters(node.arg);
-			var parameterNames:Array = (injectParameters.name || '').split(',');
-			var parameters:Array =
-				gatherMethodParameters(node.parent().parameter, parameterNames);
-			var requiredParameters:UInt = parameters.required;
-			delete parameters.required;
-			var order:Float = parseInt(node.arg.(@key == 'order').@value);
-			injectionPoints.push(new injectionPointType(node.parent().@name,
-				parameters, requiredParameters, isNaN(order) ? Limits.IntMax:order));
-		}
-		if (injectionPoints.length > 0)
-		{
-			injectionPoints.sortOn('order', Array.NUMERIC);
-		}*/
 		return injectionPoints;
 	}
 

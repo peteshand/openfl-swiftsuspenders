@@ -7,8 +7,8 @@
 
 package org.swiftsuspenders;
 
-import avmplus.DescribeTypeJSON;
 import openfl.errors.Error;
+import org.swiftsuspenders.reflection.DescribeTypeRTTIReflector;
 import org.swiftsuspenders.utils.CallProxy;
 import org.swiftsuspenders.utils.UID;
 
@@ -24,8 +24,6 @@ import org.swiftsuspenders.errors.InjectorInterfaceConstructionError;
 import org.swiftsuspenders.errors.InjectorMissingMappingError;
 import org.swiftsuspenders.mapping.InjectionMapping;
 import org.swiftsuspenders.mapping.MappingEvent;
-import org.swiftsuspenders.reflection.DescribeTypeJSONReflector;
-import org.swiftsuspenders.reflection.DescribeTypeReflector;
 import org.swiftsuspenders.reflection.Reflector;
 import org.swiftsuspenders.typedescriptions.ConstructorInjectionPoint;
 import org.swiftsuspenders.typedescriptions.InjectionPoint;
@@ -280,14 +278,7 @@ class Injector extends EventDispatcher
 		_mappings = new Map<String,InjectionMapping>();
 		_mappingsInProcess = new Map<String,Bool>();
 		_managedObjects = new Map<String,Dynamic>();
-		try
-		{
-			_reflector = DescribeTypeJSON.available ? new DescribeTypeJSONReflector() : new DescribeTypeReflector();
-		}
-		catch (e:Error)
-		{
-			_reflector = new DescribeTypeReflector();
-		}
+		_reflector = new DescribeTypeRTTIReflector();
 		_classDescriptor = new TypeDescriptor(_reflector, INJECTION_POINTS_CACHE);
 		this.applicationDomain = ApplicationDomain.currentDomain;
 		super();
